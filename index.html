@@ -1197,6 +1197,7 @@ async function renderList() {
           ${!c.frozen ? '✅ نشطة' : '❌ مجمّدة'}
         </span>
         <button class="btn btn-outline" onclick="regenQR('${c.code}')" title="عرض QR">📱 QR</button>
+        <button class="btn btn-outline" onclick="copyRowLink('${c.code}')" title="نسخ رابط التفعيل">🔗 رابط</button>
         <button class="btn btn-outline" onclick="toggleFreeze('${c.code}')">
           ${!c.frozen ? '🔒 تجميد' : '🔓 تفعيل'}
         </button>
@@ -1265,12 +1266,18 @@ async function showQR(payload, company, expires, devices) {
 // ── إعادة توليد QR لشركة موجودة ──
 async function regenQR(code) {
   const c = _cache.find(x => x.code === code);
-  if (!c) return;
+  if (!c) {
+    // إعادة التحميل ثم المحاولة مجدداً
+    await loadCompanies();
+    const c2 = _cache.find(x => x.code === code);
+    if (!c2) { toast("⚠️ لم يتم العثور على الشركة — أعد تحميل الصفحة"); return; }
+    return regenQR(code);
+  }
   // إعادة بناء payload كما كان
   const payload = {
     company: c.company,
-    url:     c.sb_url,
-    key:     c.sb_key,
+    url:     c.sb_url  || "",
+    key:     c.sb_key  || "",
     expires: c.expires || "",
     devices: c.devices,
     code:    c.code,
@@ -1281,16 +1288,52 @@ async function regenQR(code) {
   document.getElementById("qr-result").scrollIntoView({ behavior: "smooth" });
 }
 
+// ── نسخ رابط التفعيل مباشرة من القائمة ──
+async function copyRowLink(code) {
+  const c = _cache.find(x => x.code === code);
+  if (!c) { toast("⚠️ لم يتم العثور على الشركة"); return; }
+  const payload = {
+    company: c.company,
+    url:     c.sb_url  || "",
+    key:     c.sb_key  || "",
+    expires: c.expires || "",
+    devices: c.devices,
+    code:    c.code,
+    v: 1,
+    sig: c.sig
+  };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const link = PWA_BASE + "?lic=" + encoded;
+  try {
+    await navigator.clipboard.writeText(link);
+    toast("📋 تم نسخ رابط تفعيل " + c.company);
+  } catch(e) {
+    // fallback لأجهزة لا تدعم clipboard API
+    const ta = document.createElement("textarea");
+    ta.value = link;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    toast("📋 تم نسخ الرابط");
+  }
+}
+
 // ── تجميد / تفعيل ──
 async function toggleFreeze(code) {
   const c = _cache.find(x => x.code === code);
-  if (!c) return;
+  if (!c) { toast("⚠️ لم يتم العثور على الشركة — أعد تحميل الصفحة"); return; }
   const newFrozen = !c.frozen;
   initSB();
-  const { error } = await sb.from("stoc_licenses")
+  const { data, error } = await sb.from("stoc_licenses")
     .update({ frozen: newFrozen })
-    .eq("code", code);
-  if (error) { toast("❌ " + error.message); return; }
+    .eq("code", code)
+    .select();
+  if (error) { toast("❌ خطأ: " + error.message); return; }
+  if (!data || data.length === 0) {
+    toast("⚠️ لم يتم التعديل — تحقق من صلاحيات قاعدة البيانات (RLS)");
+    return;
+  }
   toast(newFrozen ? "🔒 تم تجميد الشركة" : "✅ تم تفعيل الشركة");
   await renderList();
 }
@@ -1299,8 +1342,15 @@ async function toggleFreeze(code) {
 async function deleteCompany(code) {
   if (!confirm("هل أنت متأكد من حذف هذه الشركة؟")) return;
   initSB();
-  const { error } = await sb.from("stoc_licenses").delete().eq("code", code);
-  if (error) { toast("❌ " + error.message); return; }
+  const { data, error } = await sb.from("stoc_licenses")
+    .delete()
+    .eq("code", code)
+    .select();
+  if (error) { toast("❌ خطأ: " + error.message); return; }
+  if (!data || data.length === 0) {
+    toast("⚠️ لم يتم الحذف — تحقق من صلاحيات قاعدة البيانات (RLS)\nيجب استخدام service_role key في لوحة الإدارة");
+    return;
+  }
   toast("🗑 تم الحذف");
   await renderList();
 }
@@ -1479,6 +1529,19 @@ async function wizNext() {
       toast("⚠️ يرجى إدخال اسم الشركة");
       document.getElementById("wiz-company").focus();
       return;
+    }
+    // ── التحقق من عدم وجود تفعيل مسبق لنفس الشركة ──
+    initSB();
+    const { data: existing } = await sb.from("stoc_licenses")
+      .select("code, frozen")
+      .ilike("company", company)
+      .limit(1);
+    if (existing && existing.length > 0) {
+      const isFrozen = existing[0].frozen;
+      const statusText = isFrozen ? "مجمّدة ❄️" : "نشطة ✅";
+      if (!confirm(
+        `⚠️ يوجد تفعيل مسبق لشركة "${company}" (${statusText})\nكود: ${existing[0].code}\n\nهل تريد إنشاء تفعيل جديد رغم ذلك؟`
+      )) return;
     }
     _wizStep = 4;
     wizRenderStep();
