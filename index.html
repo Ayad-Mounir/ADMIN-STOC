@@ -1545,7 +1545,13 @@ async function wizNext() {
     }
     _wizStep = 4;
     wizRenderStep();
-    await wizGenerate();
+    try {
+      await wizGenerate();
+    } catch(e) {
+      console.error("wizGenerate failed:", e);
+      toast("❌ خطأ: " + (e.message || e));
+      document.getElementById("wiz-generating").style.display = "none";
+    }
     return;
   }
 }
@@ -1653,14 +1659,7 @@ async function wizGenerate() {
   _lastPayload  = payload;
   _lastLink     = link;
 
-  // ── توليد QR فوراً ──
-  const canvas = document.getElementById("wiz-qr-canvas");
-  await QRCode.toCanvas(canvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } });
-  const oldCanvas = document.getElementById("qr-canvas");
-  await QRCode.toCanvas(oldCanvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } });
-  document.getElementById("lic-link-input").value = link;
-
-  // ── عرض النتيجة فوراً ──
+  // ── عرض النتيجة فوراً بدون انتظار أي شيء ──
   document.getElementById("wiz-res-company").textContent = "🏢 " + company;
   const pills = [];
   pills.push(`<span class="wiz-pill">🔑 ${code}</span>`);
@@ -1670,11 +1669,23 @@ async function wizGenerate() {
   if (note)    pills.push(`<span class="wiz-pill">📝 ${note}</span>`);
   document.getElementById("wiz-res-pills").innerHTML = pills.join("");
   document.getElementById("wiz-link-input").value = link;
+  document.getElementById("lic-link-input").value = link;
   document.getElementById("wiz-generating").style.display = "none";
   document.getElementById("wiz-result-box").style.display  = "flex";
   document.getElementById("wiz-btn-next").style.display = "none";
   document.getElementById("wiz-btn-back").style.display = "none";
-  toast("✅ تم إنشاء التفعيل — جارٍ الحفظ…");
+  toast("✅ تم إنشاء التفعيل!");
+
+  // ── توليد QR في الخلفية ──
+  try {
+    const canvas = document.getElementById("wiz-qr-canvas");
+    await QRCode.toCanvas(canvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } });
+    const oldCanvas = document.getElementById("qr-canvas");
+    await QRCode.toCanvas(oldCanvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } });
+  } catch(qrErr) {
+    console.warn("QR error:", qrErr);
+    toast("⚠️ تعذّر توليد QR — الرابط متاح للنسخ");
+  }
 
   // ── الحفظ في Supabase في الخلفية ──
   try {
@@ -1685,10 +1696,10 @@ async function wizGenerate() {
         expires: expires || null, devices, frozen: false, note: note || null, sig
       }), 8000
     );
-    if (error) toast("⚠️ QR جاهز لكن الحفظ فشل: " + error.message);
-    else toast("✅ تم الحفظ في قاعدة البيانات");
+    if (error) toast("⚠️ لم يُحفظ في قاعدة البيانات: " + error.message);
+    else { toast("💾 تم الحفظ"); renderList(); }
   } catch(e) {
-    toast("⚠️ QR جاهز — تأخر الحفظ، تحقق من الاتصال");
+    toast("⚠️ تأخر الحفظ — تحقق من الاتصال");
   }
 }
 
