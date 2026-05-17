@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="STOC Admin"/>
+<meta name="theme-color" content="#f59e0b"/>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="apple-touch-icon" href="./icon-192.png"/>
+<title>STOC Manager — لوحة المدير</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// ── تسجيل Service Worker ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+<style>
+  :root {
+    --bg:       #07090f;
+    --surface:  #0f1420;
+    --border:   #1e2535;
+    --gold:     #f59e0b;
+    --gold2:    #fbbf24;
+    --dim:      #b45309;
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+    --green:    #10b981;
+    --red:      #ef4444;
+    --blue:     #3b82f6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-logo .ico {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--dim), var(--gold));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .header-logo h1 { font-size: 18px; font-weight: 800; }
+  .header-logo span { font-size: 11px; color: var(--muted); display: block; }
+  .header-badge {
+    background: linear-gradient(135deg, var(--dim), var(--gold));
+    color: #000;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Layout ── */
+  .container { max-width: 900px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── Form ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  input, select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  input:focus, select:focus { border-color: var(--gold); }
+  input::placeholder { color: var(--muted); }
+
+  /* ── Buttons ── */
+  .btn {
+    border: none; cursor: pointer;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700; border-radius: 10px;
+    transition: all 0.2s; display: inline-flex;
+    align-items: center; gap: 8px;
+  }
+  .btn-gold {
+    background: linear-gradient(135deg, var(--dim), var(--gold));
+    color: #000;
+    padding: 12px 28px;
+    font-size: 14px;
+  }
+  .btn-gold:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-red {
+    background: transparent;
+    border: 1px solid #ef444440;
+    color: var(--red);
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+  .btn-red:hover { background: #ef444420; }
+
+  /* ── QR Result ── */
+  .qr-result {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 28px;
+    background: var(--bg);
+    border: 1px solid var(--gold);
+    border-radius: 16px;
+    margin-top: 20px;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .qr-result.show { display: flex; }
+  .qr-canvas-wrap {
+    background: #fff;
+    padding: 16px;
+    border-radius: 12px;
+  }
+  .qr-company-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--gold);
+    text-align: center;
+  }
+  .qr-info {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.8;
+  }
+  .qr-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  /* ── Companies List ── */
+  .company-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
+    background: var(--bg);
+  }
+  .company-row:hover { border-color: var(--gold)40; }
+  .company-info { display: flex; align-items: center; gap: 12px; }
+  .company-avatar {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--dim), var(--gold));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px; color: #000;
+    flex-shrink: 0;
+  }
+  .company-name { font-size: 13px; font-weight: 700; }
+  .company-meta { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .company-actions { display: flex; gap: 8px; align-items: center; }
+  .status-badge {
+    font-size: 10px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .status-active { background: #10b98120; color: var(--green); }
+  .status-frozen { background: #ef444420; color: var(--red); }
+
+  /* ── Empty state ── */
+  .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
+  .empty .ico { font-size: 36px; margin-bottom: 12px; }
+
+  /* ── Stats ── */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-num { font-size: 28px; font-weight: 900; color: var(--gold); }
+  .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* ── Divider ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Cairo', sans-serif;
+    font-size: 13px; font-weight: 600;
+    padding: 12px 24px; border-radius: 12px;
+    opacity: 0; transition: opacity 0.3s;
+    pointer-events: none; z-index: 999;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; }
+
+  @media(max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr; }
+    .header { padding: 14px 16px; }
+  }
+
+  /* ── شاشة القفل ── */
+  #lock-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #07090f;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-family: 'Cairo', sans-serif; padding: 32px;
+  }
+  .lock-ico   { font-size: 64px; margin-bottom: 16px; }
+  .lock-title { font-size: 22px; font-weight: 900; color: #e2e8f0; margin-bottom: 4px; }
+  .lock-sub   { font-size: 12px; color: #64748b; margin-bottom: 32px; text-align: center; }
+  #lock-screen input {
+    width: 100%; max-width: 320px;
+    background: #0f1420; border: 1px solid #1e2535;
+    border-radius: 12px; color: #e2e8f0;
+    font-family: 'Cairo', sans-serif; font-size: 18px;
+    padding: 14px 18px; outline: none; text-align: center;
+    letter-spacing: 6px; margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+  #lock-screen input:focus { border-color: #f59e0b; }
+  #lock-screen input.err   { border-color: #ef4444; animation: lkshake 0.3s; }
+  @keyframes lkshake {
+    0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)}
+  }
+  .lock-btn {
+    width: 100%; max-width: 320px;
+    background: linear-gradient(135deg, #b45309, #f59e0b);
+    color: #000; border: none; border-radius: 12px;
+    font-family: 'Cairo', sans-serif; font-size: 16px; font-weight: 800;
+    padding: 14px; cursor: pointer;
+  }
+  .lock-err   { font-size: 12px; color: #ef4444; min-height: 18px; margin-top: 8px; }
+  .lock-first { font-size: 11px; color: #475569; margin-top: 14px; text-align: center; line-height: 1.7; }
+
+  /* ── زر التثبيت ── */
+  #install-btn {
+    display: none;
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, #b45309, #f59e0b);
+    color: #000; border: none; border-radius: 14px;
+    font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 800;
+    padding: 12px 28px; cursor: pointer; z-index: 1000;
+    box-shadow: 0 4px 20px #f59e0b40; white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<!-- شاشة القفل -->
+<div id="lock-screen">
+  <div class="lock-ico">🔐</div>
+  <div class="lock-title">STOC Manager</div>
+  <div class="lock-sub" id="lock-sub">أدخل كلمة السر للدخول</div>
+  <input type="password" id="lock-input" placeholder="••••••••"
+    onkeydown="if(event.key==='Enter')unlockApp()"/>
+  <div class="lock-err" id="lock-err"></div>
+  <button class="lock-btn" onclick="unlockApp()">🔓 دخول</button>
+  <div class="lock-first" id="lock-first" style="display:none">
+    أول مرة — اختر كلمة سر للتطبيق<br/>
+    <span style="color:#f59e0b">ستُحفظ على هذا الجهاز فقط</span>
+  </div>
+</div>
+
+<!-- زر تثبيت التطبيق -->
+<button id="install-btn" onclick="installApp()">📲 تثبيت كتطبيق</button>
+
+<div class="header">
+  <div class="header-logo">
+    <div class="ico">📦</div>
+    <div>
+      <h1>STOC Manager</h1>
+      <span>لوحة تفعيل الشركات</span>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div id="sb-status" style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;background:#1e2535;color:#64748b;">⏳ جارٍ الاتصال…</div>
+    <div class="header-badge">🔐 خاص بالمدير</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-num" id="stat-total">0</div>
+      <div class="stat-lbl">إجمالي الشركات</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-active" style="color:var(--green)">0</div>
+      <div class="stat-lbl">نشطة</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-frozen" style="color:var(--red)">0</div>
+      <div class="stat-lbl">مجمّدة</div>
+    </div>
+  </div>
+
+  <!-- New Company Form -->
+  <div class="card">
+    <div class="card-title">➕ إنشاء تفعيل جديد</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>اسم الشركة *</label>
+        <input type="text" id="f-company" placeholder="مثال: شركة الأطلس"/>
+      </div>
+      <div class="form-group">
+        <label>تاريخ الانتهاء</label>
+        <input type="date" id="f-expires"/>
+      </div>
+      <div class="form-group full">
+        <label>Supabase URL *</label>
+        <input type="text" id="f-url" placeholder="https://xxxx.supabase.co"/>
+      </div>
+      <div class="form-group full">
+        <label>Supabase Anon Key *</label>
+        <input type="text" id="f-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."/>
+      </div>
+      <div class="form-group">
+        <label>عدد الأجهزة المسموح بها</label>
+        <input type="number" id="f-devices" value="5" min="1" max="50"/>
+      </div>
+      <div class="form-group">
+        <label>ملاحظة (اختياري)</label>
+        <input type="text" id="f-note" placeholder="مثال: اشتراك سنوي"/>
+      </div>
+    </div>
+    <hr class="divider"/>
+    <div style="display:flex;justify-content:flex-end">
+      <button class="btn btn-gold" onclick="generate()">🔐 توليد QR التفعيل</button>
+    </div>
+
+    <!-- QR Result -->
+    <div class="qr-result" id="qr-result">
+      <div class="qr-company-name" id="qr-company-label"></div>
+      <div class="qr-canvas-wrap">
+        <canvas id="qr-canvas"></canvas>
+      </div>
+      <div class="qr-info" id="qr-info"></div>
+
+      <!-- رابط التفعيل -->
+      <div id="lic-link-box" style="width:100%;background:#0a0f1a;border:1px solid #1e2535;border-radius:12px;padding:14px;margin-top:4px;">
+        <div style="font-size:11px;color:#64748b;margin-bottom:8px;text-align:center;">🔗 رابط التثبيت المباشر — أرسله للعميل</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="lic-link-input" readonly dir="ltr"
+            style="flex:1;background:#07090f;border:1px solid #1e2535;border-radius:8px;
+                   color:#f59e0b;font-size:10px;padding:8px 10px;font-family:monospace;
+                   outline:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"/>
+          <button class="btn btn-gold" onclick="copyLink()" style="padding:8px 14px;font-size:12px;white-space:nowrap;">
+            📋 نسخ
+          </button>
+        </div>
+        <div style="font-size:10px;color:#475569;margin-top:8px;text-align:center;">
+          العميل يفتح الرابط في المتصفح → التطبيق يتفعّل تلقائياً 🚀
+        </div>
+      </div>
+
+      <div class="qr-actions" style="margin-top:12px;">
+        <button class="btn btn-gold" onclick="downloadQR()">⬇️ تحميل QR</button>
+        <button class="btn btn-outline" onclick="printQR()">🖨️ طباعة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Companies List -->
+  <div class="card">
+    <div class="card-title">🏢 الشركات المفعّلة</div>
+    <div id="companies-list">
+      <div class="empty">
+        <div class="ico">🏭</div>
+        لا توجد شركات بعد — أنشئ أول تفعيل أعلاه
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  STOC Manager — PWA Edition
+// ══════════════════════════════════════════════
+const SECRET  = "Mounir2026";
+const SB_URL  = "https://pcjbkickwdpouphkygeq.supabase.co";
+const SB_KEY  = "sb_publishable_ZNP_Qxk6e77bD9WIZYacbw_2g_HO4tT";
+const LOCK_KEY = "stoc-admin-lock-v1";
+
+// ── تثبيت التطبيق ──
+let _deferredInstall = null;
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  _deferredInstall = e;
+  document.getElementById("install-btn").style.display = "block";
+});
+window.addEventListener("appinstalled", () => {
+  document.getElementById("install-btn").style.display = "none";
+  toast("✅ تم تثبيت التطبيق!");
+});
+async function installApp() {
+  if (!_deferredInstall) return;
+  _deferredInstall.prompt();
+  await _deferredInstall.userChoice;
+  _deferredInstall = null;
+  document.getElementById("install-btn").style.display = "none";
+}
+
+// ── تشفير كلمة السر ──
+async function hashPass(pass) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pass + "STOC-ADMIN-SALT"));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
+// ── شاشة القفل ──
+async function initLockScreen() {
+  const stored = localStorage.getItem(LOCK_KEY);
+  if (!stored) {
+    // أول مرة — اختيار كلمة سر
+    document.getElementById("lock-sub").textContent = "اختر كلمة سر للتطبيق";
+    document.getElementById("lock-first").style.display = "block";
+  }
+  document.getElementById("lock-input").focus();
+}
+
+async function unlockApp() {
+  const pass  = document.getElementById("lock-input").value;
+  const input = document.getElementById("lock-input");
+  const errEl = document.getElementById("lock-err");
+
+  if (!pass || pass.length < 4) {
+    errEl.textContent = "⚠️ كلمة السر قصيرة جداً (4 أحرف على الأقل)";
+    input.classList.add("err");
+    setTimeout(() => input.classList.remove("err"), 500);
+    return;
+  }
+
+  const hash   = await hashPass(pass);
+  const stored = localStorage.getItem(LOCK_KEY);
+
+  if (!stored) {
+    // أول مرة — حفظ كلمة السر
+    localStorage.setItem(LOCK_KEY, hash);
+    errEl.textContent = "";
+    openApp();
+  } else if (hash === stored) {
+    errEl.textContent = "";
+    openApp();
+  } else {
+    errEl.textContent = "❌ كلمة السر غير صحيحة";
+    input.value = "";
+    input.classList.add("err");
+    setTimeout(() => input.classList.remove("err"), 500);
+  }
+}
+
+function openApp() {
+  const ls = document.getElementById("lock-screen");
+  ls.style.transition = "opacity 0.3s";
+  ls.style.opacity = "0";
+  setTimeout(() => { ls.style.display = "none"; renderList(); }, 320);
+}
+
+// ── تشغيل عند الفتح ──
+window.addEventListener("DOMContentLoaded", () => initLockScreen());
+
+
+let sb = null;
+let _cache = []; // نسخة محلية سريعة
+
+function initSB() {
+  if (sb) return;
+  sb = window.supabase.createClient(SB_URL, SB_KEY);
+}
+
+function setSBStatus(ok, msg) {
+  const el = document.getElementById("sb-status");
+  if (!el) return;
+  el.textContent = ok ? "🟢 " + msg : "🔴 " + msg;
+  el.style.color  = ok ? "#10b981" : "#ef4444";
+  el.style.background = ok ? "#10b98115" : "#ef444415";
+}
+
+// ── توقيع SHA-256 ──
+async function sign(payload) {
+  const msg = JSON.stringify(payload) + SECRET;
+  const buf = await crypto.subtle.digest("SHA-256",
+    new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("").slice(0, 32);
+}
+
+// ── توليد كود فريد ──
+function genCode(company) {
+  const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
+  const prefix = company.replace(/\s+/g, "").slice(0, 3).toUpperCase() || "STK";
+  return `STOC-${prefix}-${rand}`;
+}
+
+// ── قراءة الشركات من Supabase ──
+async function loadCompanies() {
+  initSB();
+  const { data, error } = await sb
+    .from("stoc_licenses")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) {
+    setSBStatus(false, "خطأ في الاتصال");
+    console.error(error);
+    return [];
+  }
+  setSBStatus(true, "متصل");
+  _cache = data || [];
+  return _cache;
+}
+
+// ── تحديث الإحصائيات ──
+function updateStats(list) {
+  document.getElementById("stat-total").textContent   = list.length;
+  document.getElementById("stat-active").textContent  = list.filter(c => !c.frozen).length;
+  document.getElementById("stat-frozen").textContent  = list.filter(c =>  c.frozen).length;
+}
+
+// ── عرض قائمة الشركات ──
+async function renderList() {
+  const el = document.getElementById("companies-list");
+  el.innerHTML = `<div class="empty"><div class="ico">⏳</div>جارٍ التحميل…</div>`;
+  const list = await loadCompanies();
+  updateStats(list);
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="ico">🏭</div>لا توجد شركات بعد — أنشئ أول تفعيل أعلاه</div>`;
+    return;
+  }
+  el.innerHTML = list.map(c => `
+    <div class="company-row">
+      <div class="company-info">
+        <div class="company-avatar">${c.company.charAt(0)}</div>
+        <div>
+          <div class="company-name">${c.company}</div>
+          <div class="company-meta">
+            ${c.code} &nbsp;·&nbsp;
+            ${c.devices} أجهزة &nbsp;·&nbsp;
+            ${c.expires ? "ينتهي: " + c.expires : "بدون انتهاء"}
+            ${c.note ? " · " + c.note : ""}
+          </div>
+        </div>
+      </div>
+      <div class="company-actions">
+        <span class="status-badge ${!c.frozen ? 'status-active' : 'status-frozen'}">
+          ${!c.frozen ? '✅ نشطة' : '❌ مجمّدة'}
+        </span>
+        <button class="btn btn-outline" onclick="regenQR('${c.code}')" title="عرض QR">📱 QR</button>
+        <button class="btn btn-outline" onclick="toggleFreeze('${c.code}')">
+          ${!c.frozen ? '🔒 تجميد' : '🔓 تفعيل'}
+        </button>
+        <button class="btn btn-red" onclick="deleteCompany('${c.code}')">🗑</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+// ── توليد QR + حفظ في Supabase ──
+async function generate() {
+  const company = document.getElementById("f-company").value.trim();
+  const url     = document.getElementById("f-url").value.trim();
+  const key     = document.getElementById("f-key").value.trim();
+  const expires = document.getElementById("f-expires").value;
+  const devices = parseInt(document.getElementById("f-devices").value) || 5;
+  const note    = document.getElementById("f-note").value.trim();
+
+  if (!company || !url || !key) {
+    toast("⚠️ يرجى ملء اسم الشركة والـ Supabase URL والـ Key");
+    return;
+  }
+
+  const code = genCode(company);
+  const payloadToSign = { company, url, key, expires, devices, code, v: 1 };
+  const sig = await sign(payloadToSign);
+  const payload = { ...payloadToSign, sig };
+
+  // حفظ في Supabase
+  initSB();
+  const { error } = await sb.from("stoc_licenses").insert({
+    company,
+    code,
+    sb_url:  url,
+    sb_key:  key,
+    expires: expires || null,
+    devices,
+    frozen:  false,
+    note:    note || null,
+    sig
+  });
+
+  if (error) {
+    toast("❌ خطأ Supabase: " + error.message);
+    return;
+  }
+
+  // توليد QR
+  await showQR(payload, company, expires, devices);
+  await renderList();
+
+  // تنظيف الفورم
+  ["f-company","f-url","f-key","f-expires","f-note"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  document.getElementById("f-devices").value = "5";
+
+  toast("✅ تم إنشاء QR التفعيل وحفظه في Supabase");
+}
+
+const PWA_BASE = "https://ayad-mounir.github.io/STOC-PWA/";
+let _lastPayload = null;
+let _lastLink    = null;
+
+async function showQR(payload, company, expires, devices) {
+  _lastPayload = payload;
+
+  // ── بناء رابط التفعيل ──
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const link    = PWA_BASE + "?lic=" + encoded;
+  _lastLink     = link;
+
+  // ── QR يحتوي الرابط (العميل يمسحه → المتصفح يفتح التطبيق مباشرة) ──
+  const canvas = document.getElementById("qr-canvas");
+  await QRCode.toCanvas(canvas, link, {
+    width: 220,
+    margin: 1,
+    color: { dark: "#000000", light: "#ffffff" }
+  });
+
+  document.getElementById("qr-company-label").textContent = "🏢 " + company;
+  document.getElementById("qr-info").innerHTML =
+    `الكود: <strong>${payload.code}</strong><br/>` +
+    `الأجهزة: ${devices} &nbsp;|&nbsp; ` +
+    (expires ? `تنتهي: ${expires}` : "بدون تاريخ انتهاء");
+
+  document.getElementById("lic-link-input").value = link;
+
+  const result = document.getElementById("qr-result");
+  result.classList.add("show");
+  result.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+// ── إعادة توليد QR لشركة موجودة ──
+async function regenQR(code) {
+  const c = _cache.find(x => x.code === code);
+  if (!c) return;
+  // إعادة بناء payload كما كان
+  const payload = {
+    company: c.company,
+    url:     c.sb_url,
+    key:     c.sb_key,
+    expires: c.expires || "",
+    devices: c.devices,
+    code:    c.code,
+    v: 1,
+    sig: c.sig
+  };
+  await showQR(payload, c.company, c.expires, c.devices);
+  document.getElementById("qr-result").scrollIntoView({ behavior: "smooth" });
+}
+
+// ── تجميد / تفعيل ──
+async function toggleFreeze(code) {
+  const c = _cache.find(x => x.code === code);
+  if (!c) return;
+  const newFrozen = !c.frozen;
+  initSB();
+  const { error } = await sb.from("stoc_licenses")
+    .update({ frozen: newFrozen })
+    .eq("code", code);
+  if (error) { toast("❌ " + error.message); return; }
+  toast(newFrozen ? "🔒 تم تجميد الشركة" : "✅ تم تفعيل الشركة");
+  await renderList();
+}
+
+// ── حذف ──
+async function deleteCompany(code) {
+  if (!confirm("هل أنت متأكد من حذف هذه الشركة؟")) return;
+  initSB();
+  const { error } = await sb.from("stoc_licenses").delete().eq("code", code);
+  if (error) { toast("❌ " + error.message); return; }
+  toast("🗑 تم الحذف");
+  await renderList();
+}
+
+// ── تحميل QR ──
+function downloadQR() {
+  const canvas = document.getElementById("qr-canvas");
+  const name = _lastPayload ? _lastPayload.company.replace(/\s+/g, "-") : "STOC";
+  const a = document.createElement("a");
+  a.download = `STOC-QR-${name}.png`;
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+  toast("⬇️ تم تحميل QR");
+}
+
+// ── طباعة ──
+function printQR() {
+  const canvas = document.getElementById("qr-canvas");
+  const company = _lastPayload ? _lastPayload.company : "";
+  const code    = _lastPayload ? _lastPayload.code : "";
+  const img     = canvas.toDataURL("image/png");
+  const w = window.open("", "_blank");
+  w.document.write(`
+    <html dir="rtl"><head>
+    <style>
+      body { font-family: Cairo, sans-serif; text-align: center; padding: 40px; background: #fff; }
+      h2 { font-size: 22px; margin-bottom: 8px; }
+      p  { font-size: 13px; color: #666; margin-bottom: 20px; }
+      img { border: 2px solid #eee; padding: 12px; border-radius: 12px; }
+      small { display: block; margin-top: 16px; font-size: 11px; color: #999; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800&display=swap" rel="stylesheet"/>
+    </head><body>
+    <h2>🏢 ${company}</h2>
+    <p>كود التفعيل: <strong>${code}</strong></p>
+    <img src="${img}" width="220"/>
+    <small>STOC PWA — امسح هذا QR لتفعيل التطبيق</small>
+    </body></html>
+  `);
+  w.document.close();
+  w.print();
+}
+
+// ── نسخ الرابط ──
+function copyLink() {
+  if (!_lastLink) return;
+  navigator.clipboard.writeText(_lastLink).then(() => toast("📋 تم نسخ رابط التفعيل"));
+}
+
+// ── Toast ──
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 2800);
+}
+
+// ── Init — تاريخ الانتهاء الافتراضي ──
+window.addEventListener("DOMContentLoaded", () => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + 1);
+  const dateEl = document.getElementById("f-expires");
+  if (dateEl) dateEl.value = d.toISOString().slice(0, 10);
+});
+</script>
+</body>
+</html>
