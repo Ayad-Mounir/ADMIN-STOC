@@ -1638,7 +1638,6 @@ async function wizGenerate() {
   const devices = parseInt(document.getElementById("wiz-devices").value) || 5;
   const note    = document.getElementById("wiz-note").value.trim();
 
-  // إظهار حالة التوليد
   document.getElementById("wiz-generating").style.display = "block";
   document.getElementById("wiz-result-box").style.display = "none";
 
@@ -1647,7 +1646,6 @@ async function wizGenerate() {
   const sig = await sign(payloadToSign);
   const payload = { ...payloadToSign, sig };
 
-  // بناء رابط التفعيل مبكراً (حتى في حال فشل الحفظ نعرض QR)
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   const link    = PWA_BASE + "?lic=" + encoded;
   _wizLink      = link;
@@ -1655,48 +1653,15 @@ async function wizGenerate() {
   _lastPayload  = payload;
   _lastLink     = link;
 
-  // حفظ في Supabase الرئيسي مع timeout 10 ثواني
-  try {
-    initSB();
-    const insertPromise = sb.from("stoc_licenses").insert({
-      company, code,
-      sb_url:  url,
-      sb_key:  key,
-      expires: expires || null,
-      devices,
-      frozen:  false,
-      note:    note || null,
-      sig
-    });
-    const { error } = await withTimeout(insertPromise, 10000);
-    if (error) {
-      // نعرض تحذير لكن نكمل (الـ QR جاهز)
-      console.warn("Supabase insert error:", error.message);
-      toast("⚠️ تم إنشاء QR لكن لم يُحفظ في السيرفر: " + error.message);
-    }
-  } catch(e) {
-    console.warn("Insert timeout:", e.message);
-    toast("⚠️ تم إنشاء QR — تعذّر الحفظ في السيرفر (timeout)");
-  }
-
-  // توليد QR في wizard
+  // ── توليد QR فوراً ──
   const canvas = document.getElementById("wiz-qr-canvas");
-  await QRCode.toCanvas(canvas, link, {
-    width: 220, margin: 1,
-    color: { dark: "#000000", light: "#ffffff" }
-  });
-
-  // أيضاً نحدّث الـ canvas القديم (للـ regenQR)
+  await QRCode.toCanvas(canvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } });
   const oldCanvas = document.getElementById("qr-canvas");
-  await QRCode.toCanvas(oldCanvas, link, {
-    width: 220, margin: 1,
-    color: { dark: "#000000", light: "#ffffff" }
-  });
+  await QRCode.toCanvas(oldCanvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } });
   document.getElementById("lic-link-input").value = link;
 
-  // عرض النتيجة
+  // ── عرض النتيجة فوراً ──
   document.getElementById("wiz-res-company").textContent = "🏢 " + company;
-
   const pills = [];
   pills.push(`<span class="wiz-pill">🔑 ${code}</span>`);
   pills.push(`<span class="wiz-pill">📱 ${devices} أجهزة</span>`);
@@ -1704,18 +1669,27 @@ async function wizGenerate() {
   else         pills.push(`<span class="wiz-pill">♾️ بدون انتهاء</span>`);
   if (note)    pills.push(`<span class="wiz-pill">📝 ${note}</span>`);
   document.getElementById("wiz-res-pills").innerHTML = pills.join("");
-
   document.getElementById("wiz-link-input").value = link;
-
-  // إخفاء التوليد وإظهار النتيجة
   document.getElementById("wiz-generating").style.display = "none";
   document.getElementById("wiz-result-box").style.display  = "flex";
-
-  // إخفاء زر التالي (النتيجة النهائية)
   document.getElementById("wiz-btn-next").style.display = "none";
   document.getElementById("wiz-btn-back").style.display = "none";
+  toast("✅ تم إنشاء التفعيل — جارٍ الحفظ…");
 
-  toast("✅ تم إنشاء التفعيل بنجاح!");
+  // ── الحفظ في Supabase في الخلفية ──
+  try {
+    initSB();
+    const { error } = await withTimeout(
+      sb.from("stoc_licenses").insert({
+        company, code, sb_url: url, sb_key: key,
+        expires: expires || null, devices, frozen: false, note: note || null, sig
+      }), 8000
+    );
+    if (error) toast("⚠️ QR جاهز لكن الحفظ فشل: " + error.message);
+    else toast("✅ تم الحفظ في قاعدة البيانات");
+  } catch(e) {
+    toast("⚠️ QR جاهز — تأخر الحفظ، تحقق من الاتصال");
+  }
 }
 
 // ── أزرار النتيجة في الـ Wizard ──
