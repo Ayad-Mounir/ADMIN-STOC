@@ -1634,9 +1634,16 @@ async function wizGenerate() {
   document.getElementById("wiz-generating").style.display = "block";
   document.getElementById("wiz-result-box").style.display = "none";
 
-  const code = genCode(company);
-  const payloadToSign = { company, url, key, expires, devices, code, v: 1 };
-  const sig = await sign(payloadToSign);
+  let sig, code, payloadToSign;
+  try {
+    code = genCode(company);
+    payloadToSign = { company, url, key, expires, devices, code, v: 1 };
+    sig = await sign(payloadToSign);
+  } catch(signErr) {
+    document.getElementById("wiz-generating").style.display = "none";
+    toast("❌ خطأ في التوقيع: " + (signErr.message || signErr));
+    return;
+  }
   const payload = { ...payloadToSign, sig };
 
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
