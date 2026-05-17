@@ -1530,19 +1530,6 @@ async function wizNext() {
       document.getElementById("wiz-company").focus();
       return;
     }
-    // ── التحقق من عدم وجود تفعيل مسبق لنفس الشركة ──
-    initSB();
-    const { data: existing } = await sb.from("stoc_licenses")
-      .select("code, frozen")
-      .ilike("company", company)
-      .limit(1);
-    if (existing && existing.length > 0) {
-      const isFrozen = existing[0].frozen;
-      const statusText = isFrozen ? "مجمّدة ❄️" : "نشطة ✅";
-      if (!confirm(
-        `⚠️ يوجد تفعيل مسبق لشركة "${company}" (${statusText})\nكود: ${existing[0].code}\n\nهل تريد إنشاء تفعيل جديد رغم ذلك؟`
-      )) return;
-    }
     _wizStep = 4;
     wizRenderStep();
     try {
