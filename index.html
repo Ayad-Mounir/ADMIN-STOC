@@ -703,7 +703,16 @@ if ('serviceWorker' in navigator) {
 );
 
 ALTER TABLE stoc_licenses ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "admin_full_access" ON stoc_licenses FOR ALL USING (true) WITH CHECK (true);</pre>
+
+-- السماح لـ anon بالقراءة (الـ PWA يستخدم anon key للتحقق)
+GRANT SELECT ON stoc_licenses TO anon;
+GRANT SELECT ON stoc_licenses TO authenticated;
+
+-- السماح بالكتابة عبر service_role فقط (الأدمين)
+CREATE POLICY "anon_read_only" ON stoc_licenses
+  FOR SELECT TO anon USING (true);
+CREATE POLICY "admin_full_access" ON stoc_licenses
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);</pre>
     <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
       <button class="btn btn-gold" onclick="copySetupSql()" style="font-size:12px;padding:10px 20px;">📋 نسخ SQL</button>
       <button class="btn btn-outline" onclick="checkAdminDB()" style="font-size:12px;padding:10px 16px;">🔄 إعادة التحقق</button>
@@ -1741,7 +1750,30 @@ async function wizGenerate() {
   _lastPayload  = payload;
   _lastLink     = link;
 
-  // ── عرض النتيجة فوراً بدون انتظار أي شيء ──
+  // ── 🔒 الحفظ في Supabase أولاً — قبل عرض أي شيء ──
+  // (الترخيص يجب أن يكون موجوداً في DB قبل أن يصل إليه العميل)
+  try {
+    initSB();
+    const { error: insertErr } = await withTimeout(
+      sb.from("stoc_licenses").insert({
+        company, code, sb_url: url, sb_key: key,
+        expires: expires || null, devices, frozen: false, note: note || null, sig
+      }), 10000
+    );
+    if (insertErr) {
+      document.getElementById("wiz-generating").style.display = "none";
+      document.getElementById("wiz-btn-back").style.display = "inline-flex";
+      toast("❌ فشل الحفظ — لا يمكن إنشاء QR: " + insertErr.message);
+      return; // لا نُكمل — لا نُعطي QR لترخيص غير محفوظ
+    }
+  } catch(saveEx) {
+    document.getElementById("wiz-generating").style.display = "none";
+    document.getElementById("wiz-btn-back").style.display = "inline-flex";
+    toast("❌ تعذّر الاتصال بـ Supabase — تحقق من الاتصال بالإنترنت");
+    return;
+  }
+
+  // ── ✅ الحفظ نجح — الآن نعرض النتيجة ──
   document.getElementById("wiz-res-company").textContent = "🏢 " + company;
   const pills = [];
   pills.push(`<span class="wiz-pill">🔑 ${code}</span>`);
@@ -1756,7 +1788,8 @@ async function wizGenerate() {
   document.getElementById("wiz-result-box").style.display  = "flex";
   document.getElementById("wiz-btn-next").style.display = "none";
   document.getElementById("wiz-btn-back").style.display = "none";
-  toast("✅ تم إنشاء التفعيل!");
+  toast("✅ تم الحفظ وإنشاء التفعيل!");
+  renderList();
 
   // ── توليد QR (canvas + img fallback + external service) ──
   await renderQR(link, "wiz-qr-canvas", "wiz-qr-img", "wiz-qr-loading");
@@ -1764,21 +1797,6 @@ async function wizGenerate() {
     const oldCanvas = document.getElementById("qr-canvas");
     if (window.QRCode && oldCanvas) await QRCode.toCanvas(oldCanvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } });
   } catch(e) { /* legacy canvas silent fail */ }
-
-  // ── الحفظ في Supabase في الخلفية ──
-  try {
-    initSB();
-    const { error } = await withTimeout(
-      sb.from("stoc_licenses").insert({
-        company, code, sb_url: url, sb_key: key,
-        expires: expires || null, devices, frozen: false, note: note || null, sig
-      }), 8000
-    );
-    if (error) toast("⚠️ لم يُحفظ في قاعدة البيانات: " + error.message);
-    else { toast("💾 تم الحفظ"); renderList(); }
-  } catch(e) {
-    toast("⚠️ تأخر الحفظ — تحقق من الاتصال");
-  }
 }
 
 // ── أزرار النتيجة في الـ Wizard ──
@@ -1841,7 +1859,16 @@ function copySetupSql() {
 );
 
 ALTER TABLE stoc_licenses ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "admin_full_access" ON stoc_licenses FOR ALL USING (true) WITH CHECK (true);`;
+
+-- السماح لـ anon بالقراءة (الـ PWA يستخدم anon key للتحقق)
+GRANT SELECT ON stoc_licenses TO anon;
+GRANT SELECT ON stoc_licenses TO authenticated;
+
+-- السماح بالكتابة عبر service_role فقط (الأدمين)
+CREATE POLICY "anon_read_only" ON stoc_licenses
+  FOR SELECT TO anon USING (true);
+CREATE POLICY "admin_full_access" ON stoc_licenses
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);`;
   navigator.clipboard.writeText(sql).then(() => toast("📋 تم نسخ SQL — الصقه في SQL Editor")).catch(() => toast("⚠️ النسخ غير متاح — انسخ يدوياً"));
 }
 
