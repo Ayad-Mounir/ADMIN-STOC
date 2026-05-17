@@ -1354,15 +1354,10 @@ async function toggleFreeze(code) {
   if (!c) { toast("⚠️ لم يتم العثور على الشركة — أعد تحميل الصفحة"); return; }
   const newFrozen = !c.frozen;
   initSB();
-  const { data, error } = await sb.from("stoc_licenses")
+  const { error } = await sb.from("stoc_licenses")
     .update({ frozen: newFrozen })
-    .eq("code", code)
-    .select();
+    .eq("code", code);
   if (error) { toast("❌ خطأ: " + error.message); return; }
-  if (!data || data.length === 0) {
-    toast("⚠️ لم يتم التعديل — تحقق من صلاحيات قاعدة البيانات (RLS)");
-    return;
-  }
   toast(newFrozen ? "🔒 تم تجميد الشركة" : "✅ تم تفعيل الشركة");
   await renderList();
 }
@@ -1371,15 +1366,10 @@ async function toggleFreeze(code) {
 async function deleteCompany(code) {
   if (!confirm("هل أنت متأكد من حذف هذه الشركة؟")) return;
   initSB();
-  const { data, error } = await sb.from("stoc_licenses")
+  const { error } = await sb.from("stoc_licenses")
     .delete()
-    .eq("code", code)
-    .select();
-  if (error) { toast("❌ خطأ: " + error.message); return; }
-  if (!data || data.length === 0) {
-    toast("⚠️ لم يتم الحذف — تحقق من صلاحيات قاعدة البيانات (RLS)\nيجب استخدام service_role key في لوحة الإدارة");
-    return;
-  }
+    .eq("code", code);
+  if (error) { toast("❌ خطأ في الحذف: " + error.message); return; }
   toast("🗑 تم الحذف");
   await renderList();
 }
