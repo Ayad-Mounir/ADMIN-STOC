@@ -682,6 +682,35 @@ if ('serviceWorker' in navigator) {
 
 <div class="container">
 
+  <!-- ── لافتة إعداد قاعدة البيانات (تظهر فقط إذا لم يُنشأ stoc_licenses) ── -->
+  <div id="admin-setup-banner" style="display:none;background:#1a0f00;border:1px solid #b45309;border-radius:14px;padding:20px;margin-bottom:20px;">
+    <div style="font-size:14px;font-weight:800;color:#f59e0b;margin-bottom:8px;">⚠️ إعداد مطلوب — جدول stoc_licenses غير موجود</div>
+    <div style="font-size:12px;color:#94a3b8;margin-bottom:14px;line-height:1.8;">
+      يجب تشغيل SQL التالي مرة واحدة في <strong style="color:#fbbf24;">Supabase SQL Editor</strong> الخاص بك قبل البدء:
+    </div>
+    <pre style="font-family:monospace;font-size:10px;color:#a5f3fc;background:#0a0f1a;border:1px solid #1e2535;border-radius:10px;padding:14px;overflow-x:auto;direction:ltr;text-align:left;line-height:1.7;">CREATE TABLE IF NOT EXISTS stoc_licenses (
+  id         BIGSERIAL PRIMARY KEY,
+  company    TEXT NOT NULL,
+  code       TEXT NOT NULL UNIQUE,
+  sb_url     TEXT,
+  sb_key     TEXT,
+  expires    DATE,
+  devices    INT DEFAULT 5,
+  frozen     BOOLEAN DEFAULT FALSE,
+  note       TEXT,
+  sig        TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE stoc_licenses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "admin_full_access" ON stoc_licenses FOR ALL USING (true) WITH CHECK (true);</pre>
+    <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+      <button class="btn btn-gold" onclick="copySetupSql()" style="font-size:12px;padding:10px 20px;">📋 نسخ SQL</button>
+      <button class="btn btn-outline" onclick="checkAdminDB()" style="font-size:12px;padding:10px 16px;">🔄 إعادة التحقق</button>
+      <a href="https://supabase.com/dashboard" target="_blank" class="btn btn-outline" style="font-size:12px;padding:10px 16px;text-decoration:none;">🔗 فتح Supabase</a>
+    </div>
+  </div>
+
   <!-- Stats -->
   <div class="stats">
     <div class="stat-card">
@@ -941,7 +970,12 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions
 
           <!-- QR -->
           <div class="wiz-qr-wrap">
-            <canvas id="wiz-qr-canvas"></canvas>
+            <canvas id="wiz-qr-canvas" style="display:none;"></canvas>
+            <img id="wiz-qr-img" style="display:none;width:220px;height:220px;" alt="QR Code"/>
+            <div id="wiz-qr-loading" style="width:220px;height:220px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
+              <div style="font-size:28px;">⏳</div>
+              <div style="font-size:11px;color:#64748b;font-family:Cairo,sans-serif;">جارٍ توليد QR…</div>
+            </div>
           </div>
 
           <!-- رابط التفعيل -->
@@ -1104,7 +1138,7 @@ function openApp() {
   const ls = document.getElementById("lock-screen");
   ls.style.transition = "opacity 0.3s";
   ls.style.opacity = "0";
-  setTimeout(() => { ls.style.display = "none"; renderList(); }, 320);
+  setTimeout(() => { ls.style.display = "none"; checkAdminDB(); renderList(); }, 320);
 }
 
 // ── تشغيل عند الفتح ──
@@ -1237,16 +1271,11 @@ async function showQR(payload, company, expires, devices) {
   document.getElementById("wiz-btn-back").style.display = "inline-flex";
 
   // توليد QR
-  const canvas = document.getElementById("wiz-qr-canvas");
-  await QRCode.toCanvas(canvas, link, {
-    width: 220, margin: 1,
-    color: { dark: "#000000", light: "#ffffff" }
-  });
+  await renderQR(link, "wiz-qr-canvas", "wiz-qr-img", "wiz-qr-loading");
   const oldCanvas = document.getElementById("qr-canvas");
-  await QRCode.toCanvas(oldCanvas, link, {
-    width: 220, margin: 1,
-    color: { dark: "#000000", light: "#ffffff" }
-  });
+  if (window.QRCode && oldCanvas) {
+    QRCode.toCanvas(oldCanvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } }).catch(()=>{});
+  }
 
   document.getElementById("wiz-res-company").textContent = "🏢 " + company;
   const pills = [];
@@ -1418,6 +1447,68 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 // ══════════════════════════════════════════════
+//  QR — توليد مع Fallback
+// ══════════════════════════════════════════════
+async function renderQR(link, canvasId, imgId, loadingId) {
+  const canvas   = document.getElementById(canvasId);
+  const img      = document.getElementById(imgId);
+  const loading  = document.getElementById(loadingId);
+
+  // محاولة 1: مكتبة QRCode المحلية → canvas
+  if (window.QRCode) {
+    try {
+      await QRCode.toCanvas(canvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } });
+      canvas.style.display = "block";
+      if (loading) loading.style.display = "none";
+      return;
+    } catch(e) { console.warn("QRCode.toCanvas failed:", e); }
+
+    // محاولة 2: toDataURL → img
+    try {
+      const url = await QRCode.toDataURL(link, { width: 220, margin: 1 });
+      img.src = url;
+      img.style.display = "block";
+      if (loading) loading.style.display = "none";
+      return;
+    } catch(e) { console.warn("QRCode.toDataURL failed:", e); }
+  }
+
+  // محاولة 3: خدمة QR خارجية (بدون تثبيت)
+  try {
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(link)}`;
+    img.onload  = () => { img.style.display = "block"; if (loading) loading.style.display = "none"; };
+    img.onerror = () => {
+      if (loading) {
+        loading.innerHTML = `<div style="font-size:24px;">⚠️</div><div style="font-size:10px;color:#ef4444;font-family:Cairo,sans-serif;text-align:center;">تعذّر توليد QR<br/>استخدم الرابط للنسخ</div>`;
+      }
+    };
+    return;
+  } catch(e) { console.warn("External QR service failed:", e); }
+
+  // الحالة النهائية: أظهر رسالة خطأ
+  if (loading) loading.innerHTML = `<div style="font-size:24px;">⚠️</div><div style="font-size:10px;color:#ef4444;font-family:Cairo,sans-serif;text-align:center;">تعذّر توليد QR<br/>استخدم الرابط للنسخ</div>`;
+}
+
+// ══════════════════════════════════════════════
+//  إعداد قاعدة بيانات الأدمين — stoc_licenses
+// ══════════════════════════════════════════════
+async function checkAdminDB() {
+  try {
+    initSB();
+    const { error } = await sb.from("stoc_licenses").select("id").limit(1);
+    if (error && (error.code === "42P01" || (error.message && error.message.includes("does not exist")))) {
+      // الجدول غير موجود — أظهر لافتة الإعداد
+      showAdminSetupBanner();
+    }
+  } catch(e) { console.warn("DB check error:", e); }
+}
+
+function showAdminSetupBanner() {
+  const banner = document.getElementById("admin-setup-banner");
+  if (banner) banner.style.display = "block";
+}
+
+// ══════════════════════════════════════════════
 //  WIZARD — منطق التحكم
 // ══════════════════════════════════════════════
 
@@ -1432,6 +1523,13 @@ function wizardOpen() {
   _wizSbVerified = false;
   _wizPayload    = null;
   _wizLink       = null;
+  // إعادة ضبط QR
+  const canvas = document.getElementById("wiz-qr-canvas");
+  const img    = document.getElementById("wiz-qr-img");
+  const load   = document.getElementById("wiz-qr-loading");
+  if (canvas)  { canvas.style.display = "none"; const ctx = canvas.getContext("2d"); if(ctx) ctx.clearRect(0,0,canvas.width,canvas.height); }
+  if (img)     { img.style.display = "none"; img.src = ""; }
+  if (load)    { load.style.display = "flex"; load.innerHTML = '<div style="font-size:28px;">⏳</div><div style="font-size:11px;color:#64748b;font-family:Cairo,sans-serif;">جارٍ توليد QR…</div>'; }
   wizRenderStep();
   document.getElementById("wizard-overlay").classList.add("open");
   document.body.style.overflow = "hidden";
@@ -1670,16 +1768,12 @@ async function wizGenerate() {
   document.getElementById("wiz-btn-back").style.display = "none";
   toast("✅ تم إنشاء التفعيل!");
 
-  // ── توليد QR في الخلفية ──
+  // ── توليد QR (canvas + img fallback + external service) ──
+  await renderQR(link, "wiz-qr-canvas", "wiz-qr-img", "wiz-qr-loading");
   try {
-    const canvas = document.getElementById("wiz-qr-canvas");
-    await QRCode.toCanvas(canvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } });
     const oldCanvas = document.getElementById("qr-canvas");
-    await QRCode.toCanvas(oldCanvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } });
-  } catch(qrErr) {
-    console.warn("QR error:", qrErr);
-    toast("⚠️ تعذّر توليد QR — الرابط متاح للنسخ");
-  }
+    if (window.QRCode && oldCanvas) await QRCode.toCanvas(oldCanvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } });
+  } catch(e) { /* legacy canvas silent fail */ }
 
   // ── الحفظ في Supabase في الخلفية ──
   try {
@@ -1738,6 +1832,27 @@ function wizPrintQR() {
   `);
   w.document.close();
   w.print();
+}
+
+// ── نسخ SQL الإعداد ──
+function copySetupSql() {
+  const sql = `CREATE TABLE IF NOT EXISTS stoc_licenses (
+  id         BIGSERIAL PRIMARY KEY,
+  company    TEXT NOT NULL,
+  code       TEXT NOT NULL UNIQUE,
+  sb_url     TEXT,
+  sb_key     TEXT,
+  expires    DATE,
+  devices    INT DEFAULT 5,
+  frozen     BOOLEAN DEFAULT FALSE,
+  note       TEXT,
+  sig        TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE stoc_licenses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "admin_full_access" ON stoc_licenses FOR ALL USING (true) WITH CHECK (true);`;
+  navigator.clipboard.writeText(sql).then(() => toast("📋 تم نسخ SQL — الصقه في SQL Editor")).catch(() => toast("⚠️ النسخ غير متاح — انسخ يدوياً"));
 }
 
 // ── نسخ SQL الجاهز ──
