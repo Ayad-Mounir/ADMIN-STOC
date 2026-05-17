@@ -963,6 +963,37 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions
             <button class="btn btn-outline" onclick="wizCopyLink()">📋 نسخ الرابط</button>
           </div>
 
+          <!-- دليل تثبيت التطبيق للعميل -->
+          <div style="width:100%;background:#0a0f1a;border:1px solid #1e2535;border-radius:12px;padding:14px;text-align:right;">
+            <div style="font-size:12px;font-weight:800;color:var(--gold);margin-bottom:12px;">📲 كيف يثبّت العميل التطبيق؟</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;gap:10px;align-items:flex-start;">
+                <div style="width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,var(--dim),var(--gold));color:#000;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+                <div style="font-size:11px;color:var(--muted);line-height:1.6;">
+                  العميل يمسح الـ <strong style="color:var(--text);">QR</strong> بكاميرا الهاتف أو يفتح الرابط في المتصفح
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start;">
+                <div style="width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,var(--dim),var(--gold));color:#000;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+                <div style="font-size:11px;color:var(--muted);line-height:1.6;">
+                  يظهر له شاشة التفعيل — يضغط <strong style="color:var(--text);">تفعيل تلقائي</strong> (الرابط يفعّل مباشرة) أو يمسح QR بالكاميرا
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start;">
+                <div style="width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,var(--dim),var(--gold));color:#000;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+                <div style="font-size:11px;color:var(--muted);line-height:1.6;">
+                  بعد التفعيل يظهر زر <strong style="color:#10b981;">📲 تثبيت التطبيق</strong> — يضغطه ويثبّت كتطبيق على الشاشة الرئيسية
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start;">
+                <div style="width:24px;height:24px;border-radius:6px;background:#1e2535;color:var(--muted);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🍎</div>
+                <div style="font-size:10px;color:#475569;line-height:1.6;">
+                  على iPhone: افتح الرابط في <strong style="color:var(--text);">Safari</strong> فقط ← اضغط زر المشاركة ⬆️ ← أضف للشاشة الرئيسية
+                </div>
+              </div>
+            </div>
+          </div>
+
           <button class="btn btn-gold" onclick="wizardClose()" style="width:100%;margin-top:4px;">
             ✅ إغلاق
           </button>
@@ -1470,23 +1501,41 @@ function wizBack() {
 }
 
 // ── التحقق من اتصال Supabase ──
+// ── مساعد: تنفيذ مع timeout ──
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("انتهت مهلة الاتصال — تحقق من URL")), ms)
+    )
+  ]);
+}
+
 async function wizVerifySB() {
-  const url = document.getElementById("wiz-url").value.trim();
+  // تنظيف الـ URL تلقائياً (إزالة / من النهاية)
+  const urlEl = document.getElementById("wiz-url");
+  urlEl.value = urlEl.value.trim().replace(/\/+$/, "");
+  const url = urlEl.value;
   const key = document.getElementById("wiz-key").value.trim();
   const statusEl = document.getElementById("wiz-sb-status");
+
+  if (!url || !key) {
+    statusEl.textContent = "⚠️ أدخل URL والـ Key أولاً";
+    statusEl.style.color = "var(--gold)";
+    return false;
+  }
 
   statusEl.textContent = "⏳ جارٍ التحقق…";
   statusEl.style.color = "var(--muted)";
 
   try {
     const testSB = window.supabase.createClient(url, key);
-    // نحاول قراءة bسطر واحد من أي جدول
-    const { error } = await testSB
-      .from("stoc_items")
-      .select("id")
-      .limit(1);
+    const { error } = await withTimeout(
+      testSB.from("stoc_items").select("id").limit(1),
+      8000
+    );
 
-    // خطأ "relation does not exist" يعني الاتصال نجح لكن الجدول غير موجود
+    // خطأ "relation does not exist" يعني الاتصال نجح لكن الجدول غير موجود بعد
     const connOk = !error || error.code === "42P01" || error.message?.includes("does not exist");
 
     if (connOk) {
@@ -1495,13 +1544,13 @@ async function wizVerifySB() {
       _wizSbVerified = true;
       return true;
     } else {
-      statusEl.textContent = "🔴 فشل الاتصال — تحقق من URL والـ Key";
+      statusEl.textContent = "🔴 " + (error?.message || "فشل الاتصال — تحقق من URL والـ Key");
       statusEl.style.color = "var(--red)";
       _wizSbVerified = false;
       return false;
     }
   } catch(e) {
-    statusEl.textContent = "🔴 خطأ: " + (e.message || "تعذّر الاتصال");
+    statusEl.textContent = "🔴 " + (e.message || "تعذّر الاتصال");
     statusEl.style.color = "var(--red)";
     _wizSbVerified = false;
     return false;
@@ -1520,7 +1569,7 @@ function wizResetSbStatus() {
 // ── إنشاء التفعيل (الخطوة 4) ──
 async function wizGenerate() {
   const company = document.getElementById("wiz-company").value.trim();
-  const url     = document.getElementById("wiz-url").value.trim();
+  const url     = document.getElementById("wiz-url").value.trim().replace(/\/+$/, "");
   const key     = document.getElementById("wiz-key").value.trim();
   const expires = document.getElementById("wiz-expires").value;
   const devices = parseInt(document.getElementById("wiz-devices").value) || 5;
@@ -1535,36 +1584,37 @@ async function wizGenerate() {
   const sig = await sign(payloadToSign);
   const payload = { ...payloadToSign, sig };
 
-  // حفظ في Supabase الرئيسي
-  initSB();
-  const { error } = await sb.from("stoc_licenses").insert({
-    company,
-    code,
-    sb_url:  url,
-    sb_key:  key,
-    expires: expires || null,
-    devices,
-    frozen:  false,
-    note:    note || null,
-    sig
-  });
-
-  if (error) {
-    document.getElementById("wiz-generating").style.display = "none";
-    toast("❌ خطأ Supabase: " + error.message);
-    _wizStep = 3;
-    wizRenderStep();
-    return;
-  }
-
-  _wizPayload = payload;
-
-  // بناء رابط التفعيل
+  // بناء رابط التفعيل مبكراً (حتى في حال فشل الحفظ نعرض QR)
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   const link    = PWA_BASE + "?lic=" + encoded;
   _wizLink      = link;
+  _wizPayload   = payload;
   _lastPayload  = payload;
   _lastLink     = link;
+
+  // حفظ في Supabase الرئيسي مع timeout 10 ثواني
+  try {
+    initSB();
+    const insertPromise = sb.from("stoc_licenses").insert({
+      company, code,
+      sb_url:  url,
+      sb_key:  key,
+      expires: expires || null,
+      devices,
+      frozen:  false,
+      note:    note || null,
+      sig
+    });
+    const { error } = await withTimeout(insertPromise, 10000);
+    if (error) {
+      // نعرض تحذير لكن نكمل (الـ QR جاهز)
+      console.warn("Supabase insert error:", error.message);
+      toast("⚠️ تم إنشاء QR لكن لم يُحفظ في السيرفر: " + error.message);
+    }
+  } catch(e) {
+    console.warn("Insert timeout:", e.message);
+    toast("⚠️ تم إنشاء QR — تعذّر الحفظ في السيرفر (timeout)");
+  }
 
   // توليد QR في wizard
   const canvas = document.getElementById("wiz-qr-canvas");
