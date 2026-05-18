@@ -638,7 +638,7 @@ input::placeholder{color:var(--muted);}
     <div class="header-ico">📦</div>
     <div>
       <div class="header-title">STOC Manager</div>
-      <div class="header-sub">لوحة تفعيل الشركات · v3.1</div>
+      <div class="header-sub">لوحة تفعيل الشركات · v3.2</div>
     </div>
   </div>
   <div class="header-right">
@@ -1219,14 +1219,15 @@ function filterList(q) {
 async function quickQR(code) {
   const c = _cache.find(x => x.code === code);
   if (!c) return;
-  const payload = buildPayload(c);
+  const payload = await buildPayloadFresh(c);
   await showQR(payload, c.company, c.expires, c.devices);
 }
 
 async function quickCopyLink(code) {
   const c = _cache.find(x => x.code === code);
   if (!c) return;
-  const link = buildLink(buildPayload(c));
+  const payload = await buildPayloadFresh(c);
+  const link = buildLink(payload);
   await copyToClipboard(link);
   toast("📋 تم نسخ رابط تفعيل " + c.company);
 }
@@ -1265,9 +1266,11 @@ function openDrawer(code) {
   fb.className = "action-btn " + (c.frozen ? "unfreeze" : "freeze");
   fb.innerHTML = c.frozen ? "🔓 تفعيل" : "🔒 تجميد";
 
-  // Link
-  const link = buildLink(buildPayload(c));
-  document.getElementById("dr-link-input").value = link;
+  // Link — سيُحدَّث عند النسخ أو عرض QR
+  document.getElementById("dr-link-input").value = "جارٍ التحميل…";
+  buildPayloadFresh(c).then(p => {
+    document.getElementById("dr-link-input").value = buildLink(p);
+  });
 
   // Custom date default
   document.getElementById("dr-custom-date").value = c.expires || "";
@@ -1385,11 +1388,16 @@ async function drQR() {
   const c = _cache.find(x => x.code === _drCode);
   if (!c) return;
   closeDrawer();
-  await showQR(buildPayload(c), c.company, c.expires, c.devices);
+  const payload = await buildPayloadFresh(c);
+  await showQR(payload, c.company, c.expires, c.devices);
 }
 
 async function drCopyLink() {
-  const link = document.getElementById("dr-link-input").value;
+  const c = _cache.find(x => x.code === _drCode);
+  if (!c) return;
+  const payload = await buildPayloadFresh(c);
+  const link = buildLink(payload);
+  document.getElementById("dr-link-input").value = link;
   await copyToClipboard(link);
   toast("📋 تم نسخ رابط التفعيل");
 }
@@ -1400,6 +1408,20 @@ async function drCopyLink() {
 function buildPayload(c) {
   return { company: c.company, url: c.sb_url || "", key: c.sb_key || "",
            expires: c.expires || "", devices: c.devices, code: c.code, v: 1, sig: c.sig };
+}
+
+// بناء payload مع إعادة حساب الـ sig دائماً
+async function buildPayloadFresh(c) {
+  const data = { company: c.company, url: c.sb_url || "", key: c.sb_key || "",
+                 expires: c.expires || "", devices: c.devices, code: c.code, v: 1 };
+  const newSig = await sign(data);
+  // حفظ الـ sig الجديد في DB إذا تغيّر
+  if (newSig !== c.sig) {
+    initSB();
+    await sb.from("stoc_licenses").update({ sig: newSig }).eq("code", c.code);
+    c.sig = newSig; // تحديث الكاش المحلي
+  }
+  return { ...data, sig: newSig };
 }
 
 function buildLink(payload) {
