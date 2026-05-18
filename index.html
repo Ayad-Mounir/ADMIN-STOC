@@ -14,7 +14,6 @@
 <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-// ── تسجيل Service Worker ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
@@ -22,628 +21,596 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <style>
-  :root {
-    --bg:       #07090f;
-    --surface:  #0f1420;
-    --border:   #1e2535;
-    --gold:     #f59e0b;
-    --gold2:    #fbbf24;
-    --dim:      #b45309;
-    --text:     #e2e8f0;
-    --muted:    #64748b;
-    --green:    #10b981;
-    --red:      #ef4444;
-    --blue:     #3b82f6;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Cairo', sans-serif;
-    min-height: 100vh;
-  }
+:root {
+  --bg:      #07090f;
+  --surf:    #0f1420;
+  --surf2:   #131a27;
+  --border:  #1e2535;
+  --border2: #2a3448;
+  --gold:    #f59e0b;
+  --gold2:   #fbbf24;
+  --dim:     #b45309;
+  --text:    #e2e8f0;
+  --muted:   #64748b;
+  --green:   #10b981;
+  --red:     #ef4444;
+  --blue:    #3b82f6;
+  --purple:  #8b5cf6;
+  --orange:  #f97316;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;}
 
-  /* ── Header ── */
-  .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 18px 28px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .header-logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .header-logo .ico {
-    width: 40px; height: 40px;
-    background: linear-gradient(135deg, var(--dim), var(--gold));
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-  }
-  .header-logo h1 { font-size: 18px; font-weight: 800; }
-  .header-logo span { font-size: 11px; color: var(--muted); display: block; }
-  .header-badge {
-    background: linear-gradient(135deg, var(--dim), var(--gold));
-    color: #000;
-    font-size: 11px;
-    font-weight: 800;
-    padding: 4px 12px;
-    border-radius: 20px;
-    letter-spacing: 0.5px;
-  }
+/* ═══════════════════════════════
+   LOCK SCREEN
+═══════════════════════════════ */
+#lock-screen{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:32px;
+}
+.lock-ico{font-size:64px;margin-bottom:16px;}
+.lock-title{font-size:24px;font-weight:900;color:var(--text);margin-bottom:4px;}
+.lock-sub{font-size:12px;color:var(--muted);margin-bottom:32px;text-align:center;}
+#lock-screen input{
+  width:100%;max-width:320px;
+  background:var(--surf);border:1px solid var(--border2);
+  border-radius:14px;color:var(--text);
+  font-family:'Cairo',sans-serif;font-size:22px;
+  padding:14px 18px;outline:none;text-align:center;
+  letter-spacing:8px;margin-bottom:14px;
+  transition:border-color .2s;
+}
+#lock-screen input:focus{border-color:var(--gold);}
+#lock-screen input.err{border-color:var(--red);animation:lkshake .3s;}
+@keyframes lkshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.lock-btn{
+  width:100%;max-width:320px;
+  background:linear-gradient(135deg,var(--dim),var(--gold));
+  color:#000;border:none;border-radius:14px;
+  font-family:'Cairo',sans-serif;font-size:16px;font-weight:800;
+  padding:15px;cursor:pointer;
+  transition:filter .2s;
+}
+.lock-btn:hover{filter:brightness(1.1);}
+.lock-err{font-size:12px;color:var(--red);min-height:20px;margin-top:8px;text-align:center;}
+.lock-first{font-size:11px;color:#475569;margin-top:14px;text-align:center;line-height:1.7;}
 
-  /* ── Layout ── */
-  .container { max-width: 900px; margin: 0 auto; padding: 28px 20px 60px; }
+/* ═══════════════════════════════
+   HEADER
+═══════════════════════════════ */
+.header{
+  background:var(--surf);border-bottom:1px solid var(--border);
+  padding:16px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.header-left{display:flex;align-items:center;gap:12px;}
+.header-ico{
+  width:42px;height:42px;
+  background:linear-gradient(135deg,var(--dim),var(--gold));
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+}
+.header-title{font-size:17px;font-weight:800;}
+.header-sub{font-size:10px;color:var(--muted);}
+.header-right{display:flex;align-items:center;gap:10px;}
+#sb-status{
+  font-size:11px;font-weight:700;
+  padding:5px 12px;border-radius:20px;
+  background:var(--border);color:var(--muted);
+  transition:all .3s;
+}
+.badge-admin{
+  background:linear-gradient(135deg,var(--dim),var(--gold));
+  color:#000;font-size:10px;font-weight:800;
+  padding:5px 12px;border-radius:20px;
+  letter-spacing:.5px;
+}
 
-  /* ── Cards ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 20px;
-  }
-  .card-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--gold);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+/* ═══════════════════════════════
+   LAYOUT
+═══════════════════════════════ */
+.container{max-width:920px;margin:0 auto;padding:24px 16px 80px;}
 
-  /* ── Form ── */
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group.full { grid-column: 1 / -1; }
-  label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-  input, select {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'Cairo', sans-serif;
-    font-size: 13px;
-    padding: 10px 14px;
-    outline: none;
-    transition: border-color 0.2s;
-    width: 100%;
-  }
-  input:focus, select:focus { border-color: var(--gold); }
-  input::placeholder { color: var(--muted); }
+/* ═══════════════════════════════
+   STATS
+═══════════════════════════════ */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat-card{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:14px;padding:16px 12px;text-align:center;
+}
+.stat-num{font-size:26px;font-weight:900;}
+.stat-lbl{font-size:10px;color:var(--muted);margin-top:3px;font-weight:700;}
 
-  /* ── Buttons ── */
-  .btn {
-    border: none; cursor: pointer;
-    font-family: 'Cairo', sans-serif;
-    font-weight: 700; border-radius: 10px;
-    transition: all 0.2s; display: inline-flex;
-    align-items: center; gap: 8px;
-  }
-  .btn-gold {
-    background: linear-gradient(135deg, var(--dim), var(--gold));
-    color: #000;
-    padding: 12px 28px;
-    font-size: 14px;
-  }
-  .btn-gold:hover { filter: brightness(1.1); transform: translateY(-1px); }
-  .btn-outline {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 8px 16px;
-    font-size: 12px;
-  }
-  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
-  .btn-red {
-    background: transparent;
-    border: 1px solid #ef444440;
-    color: var(--red);
-    padding: 6px 12px;
-    font-size: 11px;
-  }
-  .btn-red:hover { background: #ef444420; }
+/* ═══════════════════════════════
+   TOOLBAR (search + add)
+═══════════════════════════════ */
+.toolbar{display:flex;gap:10px;margin-bottom:16px;}
+.search-wrap{
+  flex:1;position:relative;
+}
+.search-wrap input{
+  width:100%;background:var(--surf);border:1px solid var(--border);
+  border-radius:12px;color:var(--text);
+  font-family:'Cairo',sans-serif;font-size:13px;
+  padding:11px 16px 11px 40px;outline:none;
+  transition:border-color .2s;
+}
+.search-wrap input:focus{border-color:var(--gold);}
+.search-wrap input::placeholder{color:var(--muted);}
+.search-icon{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-size:15px;pointer-events:none;
+}
+.btn-new{
+  background:linear-gradient(135deg,var(--dim),var(--gold));
+  color:#000;border:none;border-radius:12px;
+  font-family:'Cairo',sans-serif;font-size:13px;font-weight:800;
+  padding:11px 20px;cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+  white-space:nowrap;
+  transition:filter .2s,transform .2s;
+  box-shadow:0 4px 16px #f59e0b20;
+}
+.btn-new:hover{filter:brightness(1.1);transform:translateY(-1px);}
 
-  /* ── QR Result ── */
-  .qr-result {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    padding: 28px;
-    background: var(--bg);
-    border: 1px solid var(--gold);
-    border-radius: 16px;
-    margin-top: 20px;
-    animation: fadeIn 0.3s ease;
-  }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .qr-result.show { display: flex; }
-  .qr-canvas-wrap {
-    background: #fff;
-    padding: 16px;
-    border-radius: 12px;
-  }
-  .qr-company-name {
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--gold);
-    text-align: center;
-  }
-  .qr-info {
-    font-size: 11px;
-    color: var(--muted);
-    text-align: center;
-    line-height: 1.8;
-  }
-  .qr-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+/* ═══════════════════════════════
+   COMPANY CARDS
+═══════════════════════════════ */
+.companies-grid{display:flex;flex-direction:column;gap:10px;}
+.company-card{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:14px;padding:16px;
+  display:flex;align-items:center;gap:14px;
+  transition:border-color .2s,box-shadow .2s;
+  cursor:pointer;
+}
+.company-card:hover{border-color:#f59e0b30;box-shadow:0 4px 20px #f59e0b08;}
+.company-card.frozen{border-color:#ef444430;opacity:.85;}
+.company-avatar{
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,var(--dim),var(--gold));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:18px;color:#000;
+  flex-shrink:0;
+}
+.company-avatar.frozen-av{background:linear-gradient(135deg,#374151,#6b7280);}
+.company-body{flex:1;min-width:0;}
+.company-name{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.company-meta{font-size:10px;color:var(--muted);margin-top:3px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.meta-chip{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 8px;border-radius:20px;
+  background:var(--border);font-size:10px;font-weight:700;color:var(--muted);
+}
+.meta-chip.expiring{background:#78350f20;color:#fbbf24;}
+.meta-chip.expired{background:#ef444420;color:#ef4444;}
+.meta-chip.active-chip{background:#10b98115;color:#10b981;}
+.meta-chip.frozen-chip{background:#ef444415;color:#ef4444;}
+.company-actions-mini{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.mini-btn{
+  width:32px;height:32px;border-radius:8px;
+  border:1px solid var(--border);background:transparent;
+  color:var(--muted);font-size:14px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.mini-btn:hover{border-color:var(--gold);color:var(--gold);}
+.mini-btn.red:hover{border-color:var(--red);color:var(--red);}
+.manage-btn{
+  padding:7px 14px;border-radius:9px;
+  border:1px solid var(--border2);background:var(--surf2);
+  color:var(--text);font-family:'Cairo',sans-serif;
+  font-size:11px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;gap:5px;
+  transition:all .2s;white-space:nowrap;
+}
+.manage-btn:hover{border-color:var(--gold);color:var(--gold);}
 
-  /* ── Companies List ── */
-  .company-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    margin-bottom: 10px;
-    transition: border-color 0.2s;
-    background: var(--bg);
-  }
-  .company-row:hover { border-color: var(--gold)40; }
-  .company-info { display: flex; align-items: center; gap: 12px; }
-  .company-avatar {
-    width: 36px; height: 36px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, var(--dim), var(--gold));
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 14px; color: #000;
-    flex-shrink: 0;
-  }
-  .company-name { font-size: 13px; font-weight: 700; }
-  .company-meta { font-size: 10px; color: var(--muted); margin-top: 2px; }
-  .company-actions { display: flex; gap: 8px; align-items: center; }
-  .status-badge {
-    font-size: 10px; font-weight: 700;
-    padding: 3px 10px; border-radius: 20px;
-  }
-  .status-active { background: #10b98120; color: var(--green); }
-  .status-frozen { background: #ef444420; color: var(--red); }
+/* Empty */
+.empty-state{text-align:center;padding:48px 20px;color:var(--muted);}
+.empty-state .ico{font-size:40px;margin-bottom:12px;}
+.empty-state p{font-size:13px;}
 
-  /* ── Empty state ── */
-  .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
-  .empty .ico { font-size: 36px; margin-bottom: 12px; }
+/* ═══════════════════════════════
+   SETUP BANNER
+═══════════════════════════════ */
+.setup-banner{
+  display:none;background:#1a0f00;border:1px solid var(--dim);
+  border-radius:14px;padding:20px;margin-bottom:20px;
+}
+.setup-banner-title{font-size:14px;font-weight:800;color:var(--gold);margin-bottom:8px;}
+.setup-banner-sub{font-size:12px;color:#94a3b8;margin-bottom:14px;line-height:1.8;}
+.setup-sql{
+  font-family:monospace;font-size:10px;color:#a5f3fc;
+  background:#0a0f1a;border:1px solid var(--border);
+  border-radius:10px;padding:14px;
+  overflow-x:auto;direction:ltr;text-align:left;line-height:1.7;
+  white-space:pre;
+}
 
-  /* ── Stats ── */
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-    text-align: center;
-  }
-  .stat-num { font-size: 28px; font-weight: 900; color: var(--gold); }
-  .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+/* ═══════════════════════════════
+   MANAGE DRAWER
+═══════════════════════════════ */
+#drawer-overlay{
+  display:none;position:fixed;inset:0;z-index:600;
+  background:rgba(7,9,15,.7);backdrop-filter:blur(4px);
+}
+#drawer-overlay.open{display:block;}
+#manage-drawer{
+  position:fixed;bottom:0;left:0;right:0;z-index:700;
+  background:var(--surf);border-top:1px solid var(--border2);
+  border-radius:24px 24px 0 0;
+  padding:0 0 env(safe-area-inset-bottom,16px);
+  max-height:92vh;overflow-y:auto;
+  transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);
+}
+#manage-drawer.open{transform:translateY(0);}
+.drawer-handle{
+  width:40px;height:4px;border-radius:4px;
+  background:var(--border2);margin:12px auto 0;
+}
+.drawer-header{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;
+}
+.drawer-avatar{
+  width:48px;height:48px;border-radius:14px;
+  background:linear-gradient(135deg,var(--dim),var(--gold));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:22px;color:#000;flex-shrink:0;
+}
+.drawer-avatar.frozen-av{background:linear-gradient(135deg,#374151,#6b7280);}
+.drawer-title{font-size:16px;font-weight:800;}
+.drawer-code{font-size:10px;color:var(--muted);margin-top:2px;font-family:monospace;}
+.drawer-close{
+  width:32px;height:32px;border-radius:8px;
+  border:1px solid var(--border);background:transparent;
+  color:var(--muted);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  margin-right:auto; /* push to left in RTL */
+  flex-shrink:0;
+  transition:all .2s;
+}
+.drawer-close:hover{border-color:var(--red);color:var(--red);}
+.drawer-body{padding:16px 20px;}
+.drawer-section{margin-bottom:20px;}
+.drawer-section-title{
+  font-size:10px;font-weight:800;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.8px;
+  margin-bottom:10px;display:flex;align-items:center;gap:6px;
+}
 
-  /* ── Divider ── */
-  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+/* تمديد الاشتراك */
+.extend-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.extend-btn{
+  padding:10px 6px;border-radius:10px;
+  border:1px solid var(--border2);background:var(--surf2);
+  color:var(--text);font-family:'Cairo',sans-serif;
+  font-size:12px;font-weight:700;cursor:pointer;
+  text-align:center;transition:all .2s;
+}
+.extend-btn:hover{border-color:var(--gold);color:var(--gold);background:#1a1f2e;}
+.extend-btn.permanent{border-color:#8b5cf640;color:var(--purple);}
+.extend-btn.permanent:hover{border-color:var(--purple);background:#1a1028;}
 
-  /* ── Toast ── */
-  #toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    background: var(--surface); border: 1px solid var(--border);
-    color: var(--text); font-family: 'Cairo', sans-serif;
-    font-size: 13px; font-weight: 600;
-    padding: 12px 24px; border-radius: 12px;
-    opacity: 0; transition: opacity 0.3s;
-    pointer-events: none; z-index: 999;
-    white-space: nowrap;
-  }
-  #toast.show { opacity: 1; }
+/* حقل الأجهزة */
+.devices-row{display:flex;align-items:center;gap:10px;}
+.devices-stepper{
+  display:flex;align-items:center;gap:0;
+  border:1px solid var(--border2);border-radius:10px;overflow:hidden;
+}
+.step-btn{
+  width:38px;height:38px;
+  background:var(--surf2);border:none;
+  color:var(--text);font-size:18px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .2s;
+  font-family:'Cairo',sans-serif;
+}
+.step-btn:hover{background:var(--border2);}
+.devices-val{
+  width:52px;height:38px;background:var(--bg);
+  border:none;border-right:1px solid var(--border2);border-left:1px solid var(--border2);
+  color:var(--text);font-family:'Cairo',sans-serif;
+  font-size:16px;font-weight:800;text-align:center;outline:none;
+}
+.save-devices{
+  flex:1;padding:10px;border-radius:10px;
+  background:linear-gradient(135deg,var(--dim),var(--gold));
+  color:#000;border:none;font-family:'Cairo',sans-serif;
+  font-size:13px;font-weight:800;cursor:pointer;
+  transition:filter .2s;
+}
+.save-devices:hover{filter:brightness(1.1);}
 
-  @media(max-width: 600px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .stats { grid-template-columns: 1fr; }
-    .header { padding: 14px 16px; }
-  }
+/* أزرار الإجراءات */
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.action-btn{
+  padding:12px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;
+  cursor:pointer;border:1px solid var(--border2);
+  background:var(--surf2);color:var(--text);
+  transition:all .2s;
+}
+.action-btn:hover{border-color:var(--gold);color:var(--gold);}
+.action-btn.freeze{border-color:#ef444430;color:var(--red);}
+.action-btn.freeze:hover{background:#ef444410;}
+.action-btn.unfreeze{border-color:#10b98130;color:var(--green);}
+.action-btn.unfreeze:hover{background:#10b98110;}
+.action-btn.delete-btn{border-color:#ef444430;color:var(--red);}
+.action-btn.delete-btn:hover{background:#ef444410;}
 
-  /* ── شاشة القفل ── */
-  #lock-screen {
-    position: fixed; inset: 0; z-index: 9999;
-    background: #07090f;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    font-family: 'Cairo', sans-serif; padding: 32px;
-  }
-  .lock-ico   { font-size: 64px; margin-bottom: 16px; }
-  .lock-title { font-size: 22px; font-weight: 900; color: #e2e8f0; margin-bottom: 4px; }
-  .lock-sub   { font-size: 12px; color: #64748b; margin-bottom: 32px; text-align: center; }
-  #lock-screen input {
-    width: 100%; max-width: 320px;
-    background: #0f1420; border: 1px solid #1e2535;
-    border-radius: 12px; color: #e2e8f0;
-    font-family: 'Cairo', sans-serif; font-size: 18px;
-    padding: 14px 18px; outline: none; text-align: center;
-    letter-spacing: 6px; margin-bottom: 14px;
-    transition: border-color 0.2s;
-  }
-  #lock-screen input:focus { border-color: #f59e0b; }
-  #lock-screen input.err   { border-color: #ef4444; animation: lkshake 0.3s; }
-  @keyframes lkshake {
-    0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)}
-  }
-  .lock-btn {
-    width: 100%; max-width: 320px;
-    background: linear-gradient(135deg, #b45309, #f59e0b);
-    color: #000; border: none; border-radius: 12px;
-    font-family: 'Cairo', sans-serif; font-size: 16px; font-weight: 800;
-    padding: 14px; cursor: pointer;
-  }
-  .lock-err   { font-size: 12px; color: #ef4444; min-height: 18px; margin-top: 8px; }
-  .lock-first { font-size: 11px; color: #475569; margin-top: 14px; text-align: center; line-height: 1.7; }
+/* رابط + QR */
+.link-box{
+  background:var(--bg);border:1px dashed var(--border2);
+  border-radius:12px;padding:14px;
+}
+.link-label{font-size:10px;color:var(--muted);margin-bottom:8px;}
+.copy-row{display:flex;gap:8px;align-items:center;}
+.copy-row input{
+  flex:1;background:transparent;border:none;
+  color:var(--gold);font-family:monospace;font-size:10px;
+  outline:none;direction:ltr;
+}
+.copy-sm{
+  background:var(--border);border:none;border-radius:8px;
+  color:var(--muted);font-family:'Cairo',sans-serif;
+  font-size:11px;font-weight:700;padding:6px 12px;
+  cursor:pointer;white-space:nowrap;transition:all .2s;
+}
+.copy-sm:hover{background:var(--border2);color:var(--text);}
 
-  /* ── زر التثبيت ── */
-  #install-btn {
-    display: none;
-    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-    background: linear-gradient(135deg, #b45309, #f59e0b);
-    color: #000; border: none; border-radius: 14px;
-    font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 800;
-    padding: 12px 28px; cursor: pointer; z-index: 1000;
-    box-shadow: 0 4px 20px #f59e0b40; white-space: nowrap;
-  }
+/* مدة مخصصة */
+.custom-date-row{display:flex;gap:8px;align-items:center;margin-top:8px;}
+.custom-date-row input[type=date]{
+  flex:1;background:var(--surf2);border:1px solid var(--border2);
+  border-radius:10px;color:var(--text);
+  font-family:'Cairo',sans-serif;font-size:12px;
+  padding:9px 12px;outline:none;
+  transition:border-color .2s;
+}
+.custom-date-row input[type=date]:focus{border-color:var(--gold);}
+.set-date-btn{
+  padding:9px 14px;border-radius:10px;
+  background:linear-gradient(135deg,var(--dim),var(--gold));
+  color:#000;border:none;font-family:'Cairo',sans-serif;
+  font-size:12px;font-weight:800;cursor:pointer;
+  white-space:nowrap;
+}
 
-  /* ════════════════════════════════════
-     WIZARD — إنشاء تفعيل جديد
-  ════════════════════════════════════ */
+/* Expiry badge in drawer */
+.expiry-info{
+  padding:10px 14px;border-radius:10px;
+  background:var(--surf2);border:1px solid var(--border);
+  font-size:12px;font-weight:700;
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+}
 
-  /* زر فتح الـ Wizard */
-  .wizard-trigger {
-    width: 100%;
-    background: linear-gradient(135deg, var(--dim), var(--gold));
-    color: #000;
-    border: none;
-    border-radius: 14px;
-    font-family: 'Cairo', sans-serif;
-    font-size: 15px;
-    font-weight: 800;
-    padding: 16px 24px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    transition: filter 0.2s, transform 0.2s;
-    box-shadow: 0 4px 20px #f59e0b25;
-  }
-  .wizard-trigger:hover { filter: brightness(1.1); transform: translateY(-1px); }
+/* ═══════════════════════════════
+   WIZARD OVERLAY
+═══════════════════════════════ */
+#wizard-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(7,9,15,.85);backdrop-filter:blur(4px);
+  align-items:center;justify-content:center;padding:16px;
+}
+#wizard-overlay.open{display:flex;}
+.wizard-modal{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:20px;width:100%;max-width:560px;
+  max-height:90vh;overflow-y:auto;
+  display:flex;flex-direction:column;
+  animation:wiz-in .3s ease;
+}
+@keyframes wiz-in{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.wizard-header{
+  padding:20px 24px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--surf);
+  border-radius:20px 20px 0 0;z-index:10;
+}
+.wizard-header h2{font-size:16px;font-weight:800;color:var(--gold);}
+.wizard-close{
+  width:32px;height:32px;background:transparent;
+  border:1px solid var(--border);border-radius:8px;
+  color:var(--muted);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.wizard-close:hover{border-color:var(--red);color:var(--red);}
+.wiz-steps-bar{
+  display:flex;padding:16px 24px;gap:0;
+  border-bottom:1px solid var(--border);
+}
+.wiz-step-dot{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  gap:6px;position:relative;cursor:default;
+}
+.wiz-step-dot:not(:last-child)::after{
+  content:'';position:absolute;top:16px;
+  left:calc(-50% + 16px);right:calc(50% + 16px);
+  height:2px;background:var(--border);z-index:0;transition:background .3s;
+}
+.wiz-step-dot.done:not(:last-child)::after{background:var(--gold);}
+.wiz-step-circle{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid var(--border);background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;color:var(--muted);
+  transition:all .3s;position:relative;z-index:1;
+}
+.wiz-step-dot.active .wiz-step-circle{
+  border-color:var(--gold);
+  background:linear-gradient(135deg,var(--dim),var(--gold));
+  color:#000;box-shadow:0 0 12px #f59e0b50;
+}
+.wiz-step-dot.done .wiz-step-circle{border-color:var(--green);background:var(--green);color:#fff;}
+.wiz-step-lbl{font-size:9px;font-weight:700;color:var(--muted);text-align:center;line-height:1.3;}
+.wiz-step-dot.active .wiz-step-lbl{color:var(--gold);}
+.wiz-step-dot.done  .wiz-step-lbl{color:var(--green);}
+.wizard-body{padding:24px;flex:1;}
+.wiz-panel{display:none;}
+.wiz-panel.active{display:block;animation:wiz-fade .25s ease;}
+@keyframes wiz-fade{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.wiz-panel-title{font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.wiz-panel-sub{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.7;}
+.supabase-step{
+  display:flex;gap:14px;padding:14px;
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:12px;margin-bottom:10px;transition:border-color .2s;
+}
+.supabase-step:hover{border-color:#f59e0b30;}
+.supabase-step-num{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--dim),var(--gold));
+  color:#000;font-weight:900;font-size:14px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.supabase-step-content{flex:1;}
+.supabase-step-content strong{display:block;font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.supabase-step-content span{font-size:11px;color:var(--muted);line-height:1.6;}
+.supabase-step-content a{color:var(--gold);text-decoration:none;font-weight:700;}
+.supabase-step-content a:hover{text-decoration:underline;}
+.copy-field{display:flex;gap:8px;align-items:center;}
+.copy-field input{flex:1;direction:ltr;font-family:monospace;font-size:11px;color:var(--gold);}
+.btn-copy-sm{
+  background:transparent;border:1px solid var(--border);
+  border-radius:8px;color:var(--muted);
+  font-family:'Cairo',sans-serif;font-size:11px;font-weight:700;
+  padding:6px 12px;cursor:pointer;white-space:nowrap;transition:all .2s;
+}
+.btn-copy-sm:hover{border-color:var(--gold);color:var(--gold);}
+.sb-verify-row{display:flex;gap:10px;margin-top:14px;}
+#wiz-sb-status{
+  flex:1;padding:10px 14px;border-radius:10px;
+  font-size:12px;font-weight:700;
+  background:var(--bg);border:1px solid var(--border);
+  color:var(--muted);display:flex;align-items:center;gap:6px;
+}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group.full{grid-column:1/-1;}
+label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+input[type=text],input[type=date],input[type=number],input[type=password],select,textarea{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:10px;color:var(--text);
+  font-family:'Cairo',sans-serif;font-size:13px;
+  padding:10px 14px;outline:none;transition:border-color .2s;width:100%;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);}
+input::placeholder{color:var(--muted);}
 
-  /* Overlay */
-  #wizard-overlay {
-    display: none;
-    position: fixed; inset: 0; z-index: 500;
-    background: rgba(7,9,15,0.85);
-    backdrop-filter: blur(4px);
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-  }
-  #wizard-overlay.open { display: flex; }
+/* Duration quick-pick in wizard */
+.duration-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.dur-btn{
+  padding:10px 6px;border-radius:10px;
+  border:1px solid var(--border2);background:var(--surf2);
+  color:var(--muted);font-family:'Cairo',sans-serif;
+  font-size:12px;font-weight:700;cursor:pointer;
+  text-align:center;transition:all .2s;
+}
+.dur-btn:hover,.dur-btn.selected{border-color:var(--gold);color:var(--gold);background:#1a1f2e;}
+.dur-btn.selected{background:#1a1f2e;}
 
-  /* Modal */
-  .wizard-modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    width: 100%;
-    max-width: 560px;
-    max-height: 90vh;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    animation: wiz-in 0.3s ease;
-  }
-  @keyframes wiz-in {
-    from { opacity:0; transform:translateY(20px) scale(0.97); }
-    to   { opacity:1; transform:translateY(0) scale(1); }
-  }
+/* hint box */
+.hint-box{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:10px;padding:12px;margin-top:14px;
+}
+.hint-box p{font-size:10px;color:var(--muted);line-height:1.8;}
 
-  /* Header الـ Wizard */
-  .wizard-header {
-    padding: 20px 24px 16px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky; top: 0;
-    background: var(--surface);
-    border-radius: 20px 20px 0 0;
-    z-index: 10;
-  }
-  .wizard-header h2 {
-    font-size: 16px;
-    font-weight: 800;
-    color: var(--gold);
-  }
-  .wizard-close {
-    width: 32px; height: 32px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--muted);
-    font-size: 16px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s;
-  }
-  .wizard-close:hover { border-color: var(--red); color: var(--red); }
+/* wiz result */
+.wiz-result-box{
+  background:var(--bg);border:1px solid var(--gold);
+  border-radius:16px;padding:24px;
+  display:flex;flex-direction:column;align-items:center;
+  gap:16px;text-align:center;
+}
+.wiz-qr-wrap{background:#fff;padding:14px;border-radius:12px;}
+.wiz-company-label{font-size:18px;font-weight:800;color:var(--gold);}
+.wiz-info-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.wiz-pill{
+  font-size:11px;font-weight:700;padding:4px 12px;
+  border-radius:20px;background:#1e2535;color:var(--muted);
+}
+.wiz-link-box{
+  width:100%;background:#0a0f1a;
+  border:1px dashed var(--gold);border-radius:12px;padding:14px;
+}
+.wiz-link-label{font-size:10px;color:var(--muted);margin-bottom:8px;}
+.wiz-result-actions{
+  display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%;
+}
+.wiz-success-icon{font-size:48px;margin-bottom:4px;}
 
-  /* شريط التقدم */
-  .wiz-steps-bar {
-    display: flex;
-    padding: 16px 24px;
-    gap: 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .wiz-step-dot {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    position: relative;
-    cursor: default;
-  }
-  .wiz-step-dot:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    top: 16px;
-    left: calc(-50% + 16px);
-    right: calc(50% + 16px);
-    height: 2px;
-    background: var(--border);
-    z-index: 0;
-    transition: background 0.3s;
-  }
-  .wiz-step-dot.done:not(:last-child)::after { background: var(--gold); }
-  .wiz-step-circle {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    border: 2px solid var(--border);
-    background: var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 800;
-    color: var(--muted);
-    transition: all 0.3s;
-    position: relative; z-index: 1;
-  }
-  .wiz-step-dot.active .wiz-step-circle {
-    border-color: var(--gold);
-    background: linear-gradient(135deg, var(--dim), var(--gold));
-    color: #000;
-    box-shadow: 0 0 12px #f59e0b50;
-  }
-  .wiz-step-dot.done .wiz-step-circle {
-    border-color: var(--green);
-    background: var(--green);
-    color: #fff;
-  }
-  .wiz-step-lbl {
-    font-size: 9px;
-    font-weight: 700;
-    color: var(--muted);
-    text-align: center;
-    line-height: 1.3;
-  }
-  .wiz-step-dot.active .wiz-step-lbl { color: var(--gold); }
-  .wiz-step-dot.done  .wiz-step-lbl  { color: var(--green); }
+/* Buttons */
+.btn{
+  border:none;cursor:pointer;font-family:'Cairo',sans-serif;
+  font-weight:700;border-radius:10px;
+  transition:all .2s;display:inline-flex;align-items:center;gap:8px;
+}
+.btn-gold{
+  background:linear-gradient(135deg,var(--dim),var(--gold));
+  color:#000;padding:12px 24px;font-size:14px;
+}
+.btn-gold:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.btn-outline{
+  background:transparent;border:1px solid var(--border);
+  color:var(--muted);padding:8px 16px;font-size:12px;
+}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);}
 
-  /* محتوى الخطوة */
-  .wizard-body { padding: 24px; flex: 1; }
+/* Wizard footer */
+.wizard-footer{
+  padding:16px 24px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  position:sticky;bottom:0;background:var(--surf);
+  border-radius:0 0 20px 20px;
+}
+.wiz-counter{font-size:11px;color:var(--muted);font-weight:700;}
 
-  .wiz-panel { display: none; }
-  .wiz-panel.active { display: block; animation: wiz-fade 0.25s ease; }
-  @keyframes wiz-fade { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:translateX(0); } }
+/* Install btn */
+#install-btn{
+  display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,var(--dim),var(--gold));
+  color:#000;border:none;border-radius:14px;
+  font-family:'Cairo',sans-serif;font-size:14px;font-weight:800;
+  padding:12px 28px;cursor:pointer;z-index:1000;
+  box-shadow:0 4px 20px #f59e0b40;white-space:nowrap;
+}
 
-  .wiz-panel-title {
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--text);
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .wiz-panel-sub {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 20px;
-    line-height: 1.7;
-  }
+/* Toast */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:var(--surf);border:1px solid var(--border2);
+  color:var(--text);font-family:'Cairo',sans-serif;
+  font-size:13px;font-weight:600;padding:12px 24px;
+  border-radius:14px;opacity:0;transition:opacity .3s;
+  pointer-events:none;z-index:9999;white-space:nowrap;
+}
+#toast.show{opacity:1;}
 
-  /* بطاقة الخطوة في Step 1 */
-  .supabase-step {
-    display: flex;
-    gap: 14px;
-    padding: 14px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 10px;
-    transition: border-color 0.2s;
-  }
-  .supabase-step:hover { border-color: #f59e0b40; }
-  .supabase-step-num {
-    width: 32px; height: 32px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, var(--dim), var(--gold));
-    color: #000;
-    font-weight: 900;
-    font-size: 14px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .supabase-step-content { flex: 1; }
-  .supabase-step-content strong {
-    display: block;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 3px;
-  }
-  .supabase-step-content span {
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-  .supabase-step-content a {
-    color: var(--gold);
-    text-decoration: none;
-    font-weight: 700;
-  }
-  .supabase-step-content a:hover { text-decoration: underline; }
-
-  /* حقل مع زر نسخ */
-  .copy-field {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-  .copy-field input {
-    flex: 1;
-    direction: ltr;
-    font-family: monospace;
-    font-size: 11px;
-    color: var(--gold);
-  }
-  .btn-copy-sm {
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--muted);
-    font-family: 'Cairo', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 6px 12px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.2s;
-  }
-  .btn-copy-sm:hover { border-color: var(--gold); color: var(--gold); }
-
-  /* تحقق Supabase */
-  .sb-verify-row {
-    display: flex; gap: 10px; margin-top: 14px;
-  }
-  #wiz-sb-status {
-    flex: 1;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 700;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    display: flex; align-items: center; gap: 6px;
-  }
-
-  /* أزرار التنقل */
-  .wizard-footer {
-    padding: 16px 24px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    position: sticky; bottom: 0;
-    background: var(--surface);
-    border-radius: 0 0 20px 20px;
-  }
-  .wiz-counter {
-    font-size: 11px;
-    color: var(--muted);
-    font-weight: 700;
-  }
-
-  /* Step 4 — النتيجة */
-  .wiz-result-box {
-    background: var(--bg);
-    border: 1px solid var(--gold);
-    border-radius: 16px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    text-align: center;
-  }
-  .wiz-qr-wrap {
-    background: #fff;
-    padding: 14px;
-    border-radius: 12px;
-  }
-  .wiz-company-label {
-    font-size: 18px;
-    font-weight: 800;
-    color: var(--gold);
-  }
-  .wiz-info-pills {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .wiz-pill {
-    font-size: 11px;
-    font-weight: 700;
-    padding: 4px 12px;
-    border-radius: 20px;
-    background: #1e2535;
-    color: var(--muted);
-  }
-  .wiz-link-box {
-    width: 100%;
-    background: #0a0f1a;
-    border: 1px dashed var(--gold);
-    border-radius: 12px;
-    padding: 14px;
-  }
-  .wiz-link-label {
-    font-size: 10px;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-  .wiz-result-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
-  }
-
-  /* Success icon */
-  .wiz-success-icon {
-    font-size: 48px;
-    margin-bottom: 4px;
-  }
-
-  @media(max-width:480px) {
-    .wizard-modal { max-height: 95vh; border-radius: 16px; }
-    .wizard-body  { padding: 16px; }
-    .wizard-footer { padding: 12px 16px; }
-    .wiz-steps-bar { padding: 12px 16px; }
-    .wiz-step-lbl { display: none; }
-  }
+/* Responsive */
+@media(max-width:640px){
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .form-grid{grid-template-columns:1fr;}
+  .header{padding:12px 16px;}
+  .container{padding:16px 12px 80px;}
+  .extend-grid{grid-template-columns:repeat(2,1fr);}
+  .action-grid{grid-template-columns:1fr;}
+}
+@media(max-width:400px){
+  .wiz-step-lbl{display:none;}
+  .wizard-body{padding:16px;}
+  .wizard-footer{padding:12px 16px;}
+}
 </style>
 </head>
 <body>
@@ -659,36 +626,36 @@ if ('serviceWorker' in navigator) {
   <button class="lock-btn" onclick="unlockApp()">🔓 دخول</button>
   <div class="lock-first" id="lock-first" style="display:none">
     أول مرة — اختر كلمة سر للتطبيق<br/>
-    <span style="color:#f59e0b">ستُحفظ على هذا الجهاز فقط</span>
+    <span style="color:var(--gold)">ستُحفظ على هذا الجهاز فقط</span>
   </div>
 </div>
 
-<!-- زر تثبيت التطبيق -->
 <button id="install-btn" onclick="installApp()">📲 تثبيت كتطبيق</button>
 
+<!-- Header -->
 <div class="header">
-  <div class="header-logo">
-    <div class="ico">📦</div>
+  <div class="header-left">
+    <div class="header-ico">📦</div>
     <div>
-      <h1>STOC Manager</h1>
-      <span>لوحة تفعيل الشركات · v2.1</span>
+      <div class="header-title">STOC Manager</div>
+      <div class="header-sub">لوحة تفعيل الشركات · v3.0</div>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:10px;">
-    <div id="sb-status" style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;background:#1e2535;color:#64748b;">⏳ جارٍ الاتصال…</div>
-    <div class="header-badge">🔐 خاص بالمدير</div>
+  <div class="header-right">
+    <div id="sb-status">⏳ جارٍ الاتصال…</div>
+    <div class="badge-admin">🔐 المدير</div>
   </div>
 </div>
 
 <div class="container">
 
-  <!-- ── لافتة إعداد قاعدة البيانات (تظهر فقط إذا لم يُنشأ stoc_licenses) ── -->
-  <div id="admin-setup-banner" style="display:none;background:#1a0f00;border:1px solid #b45309;border-radius:14px;padding:20px;margin-bottom:20px;">
-    <div style="font-size:14px;font-weight:800;color:#f59e0b;margin-bottom:8px;">⚠️ إعداد مطلوب — جدول stoc_licenses غير موجود</div>
-    <div style="font-size:12px;color:#94a3b8;margin-bottom:14px;line-height:1.8;">
-      يجب تشغيل SQL التالي مرة واحدة في <strong style="color:#fbbf24;">Supabase SQL Editor</strong> الخاص بك قبل البدء:
+  <!-- Setup Banner -->
+  <div class="setup-banner" id="admin-setup-banner">
+    <div class="setup-banner-title">⚠️ إعداد مطلوب — جدول stoc_licenses غير موجود</div>
+    <div class="setup-banner-sub">
+      شغّل SQL التالي مرة واحدة في <strong style="color:var(--gold2)">Supabase SQL Editor</strong> قبل البدء:
     </div>
-    <pre style="font-family:monospace;font-size:10px;color:#a5f3fc;background:#0a0f1a;border:1px solid #1e2535;border-radius:10px;padding:14px;overflow-x:auto;direction:ltr;text-align:left;line-height:1.7;">CREATE TABLE IF NOT EXISTS stoc_licenses (
+    <pre class="setup-sql" id="setup-sql-code">CREATE TABLE IF NOT EXISTS stoc_licenses (
   id         BIGSERIAL PRIMARY KEY,
   company    TEXT NOT NULL,
   code       TEXT NOT NULL UNIQUE,
@@ -704,11 +671,9 @@ if ('serviceWorker' in navigator) {
 
 ALTER TABLE stoc_licenses ENABLE ROW LEVEL SECURITY;
 
--- السماح لـ anon بالقراءة (الـ PWA يستخدم anon key للتحقق)
 GRANT SELECT ON stoc_licenses TO anon;
 GRANT SELECT ON stoc_licenses TO authenticated;
 
--- السماح بالكتابة عبر service_role فقط (الأدمين)
 CREATE POLICY "anon_read_only" ON stoc_licenses
   FOR SELECT TO anon USING (true);
 CREATE POLICY "admin_full_access" ON stoc_licenses
@@ -727,126 +692,181 @@ CREATE POLICY "admin_full_access" ON stoc_licenses
       <div class="stat-lbl">إجمالي الشركات</div>
     </div>
     <div class="stat-card">
-      <div class="stat-num" id="stat-active" style="color:var(--green)">0</div>
+      <div class="stat-num" style="color:var(--green)" id="stat-active">0</div>
       <div class="stat-lbl">نشطة</div>
     </div>
     <div class="stat-card">
-      <div class="stat-num" id="stat-frozen" style="color:var(--red)">0</div>
+      <div class="stat-num" style="color:var(--red)" id="stat-frozen">0</div>
       <div class="stat-lbl">مجمّدة</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" style="color:var(--orange)" id="stat-expiring">0</div>
+      <div class="stat-lbl">تنتهي قريباً</div>
     </div>
   </div>
 
-  <!-- زر فتح Wizard إنشاء تفعيل جديد -->
-  <button class="wizard-trigger" onclick="wizardOpen()">
-    ➕ إنشاء تفعيل لشركة جديدة
-  </button>
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="بحث عن شركة…"
+        oninput="filterList(this.value)"/>
+    </div>
+    <button class="btn-new" onclick="wizardOpen()">
+      ➕ تفعيل جديد
+    </button>
+  </div>
 
   <!-- Companies List -->
-  <div class="card">
-    <div class="card-title">🏢 الشركات المفعّلة</div>
-    <div id="companies-list">
-      <div class="empty">
-        <div class="ico">🏭</div>
-        لا توجد شركات بعد — أنشئ أول تفعيل أعلاه
-      </div>
+  <div id="companies-list">
+    <div class="empty-state">
+      <div class="ico">⏳</div>
+      <p>جارٍ التحميل…</p>
     </div>
   </div>
 
 </div>
 
-<!-- ══════════════════════════════════
+<!-- ════════════════════════════════
+     MANAGE DRAWER
+════════════════════════════════ -->
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+<div id="manage-drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-header">
+    <div class="drawer-avatar" id="dr-avatar">ش</div>
+    <div>
+      <div class="drawer-title" id="dr-name">اسم الشركة</div>
+      <div class="drawer-code" id="dr-code">STOC-XXX-XXXXXX</div>
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body">
+
+    <!-- حالة الاشتراك -->
+    <div class="expiry-info" id="dr-expiry-info">
+      📅 <span id="dr-expiry-text">—</span>
+    </div>
+
+    <!-- تمديد الاشتراك -->
+    <div class="drawer-section">
+      <div class="drawer-section-title">⏳ تمديد الاشتراك</div>
+      <div class="extend-grid">
+        <button class="extend-btn" onclick="extendSub(1)">+شهر</button>
+        <button class="extend-btn" onclick="extendSub(3)">+3 أشهر</button>
+        <button class="extend-btn" onclick="extendSub(6)">+6 أشهر</button>
+        <button class="extend-btn" onclick="extendSub(12)">+سنة</button>
+        <button class="extend-btn permanent" onclick="extendSub(0)" style="grid-column:span 2;">♾️ دائم (بدون انتهاء)</button>
+      </div>
+      <div class="custom-date-row">
+        <input type="date" id="dr-custom-date" placeholder="أو حدد تاريخاً يدوياً"/>
+        <button class="set-date-btn" onclick="setCustomDate()">تعيين</button>
+      </div>
+    </div>
+
+    <!-- عدد الأجهزة -->
+    <div class="drawer-section">
+      <div class="drawer-section-title">📱 عدد الأجهزة المسموح بها</div>
+      <div class="devices-row">
+        <div class="devices-stepper">
+          <button class="step-btn" onclick="stepDevices(-1)">−</button>
+          <input class="devices-val" type="number" id="dr-devices" value="5" min="1" max="100"/>
+          <button class="step-btn" onclick="stepDevices(1)">+</button>
+        </div>
+        <button class="save-devices" onclick="saveDevices()">💾 حفظ</button>
+      </div>
+    </div>
+
+    <!-- إجراءات -->
+    <div class="drawer-section">
+      <div class="drawer-section-title">⚙️ إجراءات</div>
+      <div class="action-grid">
+        <button class="action-btn" onclick="drQR()">📱 عرض QR</button>
+        <button class="action-btn" onclick="drCopyLink()">🔗 نسخ الرابط</button>
+        <button class="action-btn" id="dr-freeze-btn" onclick="drToggleFreeze()">🔒 تجميد</button>
+        <button class="action-btn delete-btn" onclick="drDelete()">🗑️ حذف نهائي</button>
+      </div>
+    </div>
+
+    <!-- رابط التفعيل -->
+    <div class="drawer-section">
+      <div class="drawer-section-title">🔗 رابط التفعيل</div>
+      <div class="link-box">
+        <div class="link-label">أرسله للعميل أو دعه يمسح QR</div>
+        <div class="copy-row">
+          <input id="dr-link-input" readonly dir="ltr"/>
+          <button class="copy-sm" onclick="drCopyLink()">نسخ</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════
      WIZARD MODAL
-══════════════════════════════════ -->
+════════════════════════════════ -->
 <div id="wizard-overlay" onclick="wizardOverlayClick(event)">
   <div class="wizard-modal" id="wizard-modal">
-
-    <!-- Header -->
     <div class="wizard-header">
       <h2>🚀 تفعيل شركة جديدة</h2>
       <button class="wizard-close" onclick="wizardClose()">✕</button>
     </div>
-
-    <!-- شريط الخطوات -->
     <div class="wiz-steps-bar" id="wiz-steps-bar">
       <div class="wiz-step-dot active" id="wsd-1">
         <div class="wiz-step-circle">1</div>
-        <div class="wiz-step-lbl">حساب<br/>Supabase</div>
+        <div class="wiz-step-lbl">Supabase</div>
       </div>
       <div class="wiz-step-dot" id="wsd-2">
         <div class="wiz-step-circle">2</div>
-        <div class="wiz-step-lbl">بيانات<br/>الاتصال</div>
+        <div class="wiz-step-lbl">الاتصال</div>
       </div>
       <div class="wiz-step-dot" id="wsd-3">
         <div class="wiz-step-circle">3</div>
-        <div class="wiz-step-lbl">بيانات<br/>الشركة</div>
+        <div class="wiz-step-lbl">الشركة</div>
       </div>
       <div class="wiz-step-dot" id="wsd-4">
         <div class="wiz-step-circle">✓</div>
-        <div class="wiz-step-lbl">QR<br/>والرابط</div>
+        <div class="wiz-step-lbl">النتيجة</div>
       </div>
     </div>
-
-    <!-- Body -->
     <div class="wizard-body">
 
-      <!-- ══ الخطوة 1: إنشاء حساب Supabase ══ -->
+      <!-- الخطوة 1 -->
       <div class="wiz-panel active" id="wiz-p1">
         <div class="wiz-panel-title">☁️ إنشاء مشروع Supabase جديد</div>
-        <div class="wiz-panel-sub">
-          كل شركة تحتاج مشروع Supabase خاص بها.<br/>
-          اتبع الخطوات التالية لإنشاء مشروع مجاني جديد:
-        </div>
-
+        <div class="wiz-panel-sub">كل شركة تحتاج مشروع Supabase خاص بها. اتبع الخطوات:</div>
         <div class="supabase-step">
           <div class="supabase-step-num">1</div>
           <div class="supabase-step-content">
             <strong>افتح موقع Supabase</strong>
-            <span>
-              اذهب إلى
-              <a href="https://supabase.com" target="_blank">supabase.com</a>
-              وسجّل دخولك بحساب GitHub أو Google أو البريد الإلكتروني
-            </span>
+            <span>اذهب إلى <a href="https://supabase.com" target="_blank">supabase.com</a> وسجّل دخولك</span>
           </div>
         </div>
-
         <div class="supabase-step">
           <div class="supabase-step-num">2</div>
           <div class="supabase-step-content">
             <strong>أنشئ مشروعاً جديداً</strong>
-            <span>
-              اضغط على <strong style="color:var(--gold)">New Project</strong> ←
-              اختر المنظمة ← اكتب اسم المشروع (مثل: atlas-company) ←
-              أدخل كلمة سر قاعدة البيانات ← اختر المنطقة الأقرب
-            </span>
+            <span>اضغط <strong style="color:var(--gold)">New Project</strong> ← اختر الاسم والمنطقة ← أدخل كلمة سر DB</span>
           </div>
         </div>
-
         <div class="supabase-step">
           <div class="supabase-step-num">3</div>
           <div class="supabase-step-content">
             <strong>انتظر حتى يكتمل الإنشاء</strong>
-            <span>
-              يستغرق عادةً 1-2 دقيقة حتى يظهر المشروع كـ <strong style="color:var(--green)">Active ✅</strong>
-            </span>
+            <span>يستغرق 1-2 دقيقة حتى يظهر كـ <strong style="color:var(--green)">Active ✅</strong></span>
           </div>
         </div>
-
         <div class="supabase-step">
           <div class="supabase-step-num">4</div>
           <div class="supabase-step-content">
-            <strong>أنشئ جدول stoc_items</strong>
-            <span>
-              اذهب إلى <strong style="color:var(--gold)">SQL Editor</strong> وشغّل
-              <a href="#" onclick="wizCopySql();return false;">← انسخ SQL الجاهز</a>
-              لإنشاء الجداول المطلوبة تلقائياً
-            </span>
+            <strong>أنشئ الجداول المطلوبة</strong>
+            <span>اذهب إلى SQL Editor وشغّل <a href="#" onclick="wizCopySql();return false;">← انسخ SQL الجاهز</a></span>
           </div>
         </div>
-
-        <!-- SQL Box -->
         <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:6px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <span style="font-size:11px;color:var(--muted);font-weight:700;">📄 SQL الجاهز — انسخه وشغّله في SQL Editor</span>
+            <span style="font-size:11px;color:var(--muted);font-weight:700;">📄 SQL الجاهز</span>
             <button class="btn-copy-sm" onclick="wizCopySql()">📋 نسخ</button>
           </div>
           <pre id="wiz-sql-code" style="font-family:monospace;font-size:10px;color:#a5f3fc;line-height:1.7;overflow-x:auto;white-space:pre-wrap;direction:ltr;text-align:left;">-- جدول المنتجات
@@ -859,7 +879,6 @@ CREATE TABLE IF NOT EXISTS stoc_items (
   stock       INT DEFAULT 0,
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- جدول الحركات
 CREATE TABLE IF NOT EXISTS stoc_transactions (
   id          BIGSERIAL PRIMARY KEY,
@@ -869,106 +888,79 @@ CREATE TABLE IF NOT EXISTS stoc_transactions (
   note        TEXT,
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
-
--- تفعيل RLS
 ALTER TABLE stoc_items        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE stoc_transactions ENABLE ROW LEVEL SECURITY;
-
--- سماح للقراءة والكتابة عبر anon key
-CREATE POLICY "public_access_items" ON stoc_items
-  FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "public_access_tx"    ON stoc_transactions
-  FOR ALL USING (true) WITH CHECK (true);</pre>
+CREATE POLICY "public_access_items" ON stoc_items    FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WITH CHECK (true);</pre>
         </div>
       </div>
 
-      <!-- ══ الخطوة 2: بيانات Supabase ══ -->
+      <!-- الخطوة 2 -->
       <div class="wiz-panel" id="wiz-p2">
         <div class="wiz-panel-title">🔑 بيانات اتصال Supabase</div>
-        <div class="wiz-panel-sub">
-          افتح مشروعك في Supabase ←
-          <strong style="color:var(--gold)">Settings → API</strong><br/>
-          ستجد هنا Project URL و anon public key
-        </div>
-
-        <!-- صورة إرشادية -->
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;text-align:center;">
-          <div style="font-size:28px;margin-bottom:6px;">⚙️</div>
-          <div style="font-size:12px;color:var(--muted);line-height:1.8;">
-            <span style="color:var(--text)">المسار:</span>
-            &nbsp;Dashboard → اختر مشروعك →
-            <span style="color:var(--gold);font-weight:700;">Settings</span> →
-            <span style="color:var(--gold);font-weight:700;">API</span>
-          </div>
-        </div>
-
+        <div class="wiz-panel-sub">افتح مشروعك ← <strong style="color:var(--gold)">Settings → API</strong></div>
         <div class="form-group" style="margin-bottom:14px;">
           <label>Supabase Project URL *</label>
-          <input type="text" id="wiz-url"
-            placeholder="https://xxxxxxxxxxxx.supabase.co"
-            oninput="wizResetSbStatus()"
-            dir="ltr" style="font-family:monospace;font-size:12px;"/>
-          <span style="font-size:10px;color:var(--muted);margin-top:4px;">
-            مثال: https://abcdefghij.supabase.co
-          </span>
+          <input type="text" id="wiz-url" placeholder="https://xxxxxxxxxxxx.supabase.co"
+            oninput="wizResetSbStatus()" dir="ltr" style="font-family:monospace;font-size:12px;"/>
         </div>
-
         <div class="form-group" style="margin-bottom:14px;">
           <label>Supabase Anon Key (public) *</label>
-          <input type="text" id="wiz-key"
-            placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-            oninput="wizResetSbStatus()"
-            dir="ltr" style="font-family:monospace;font-size:10px;"/>
-          <span style="font-size:10px;color:var(--muted);margin-top:4px;">
-            انسخ <strong>anon public</strong> — ليس service_role
-          </span>
+          <input type="text" id="wiz-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            oninput="wizResetSbStatus()" dir="ltr" style="font-family:monospace;font-size:10px;"/>
+          <span style="font-size:10px;color:var(--muted);margin-top:4px;">انسخ <strong>anon public</strong> — ليس service_role</span>
         </div>
-
         <div class="sb-verify-row">
           <div id="wiz-sb-status">⏳ في انتظار التحقق…</div>
-          <button class="btn btn-gold" onclick="wizVerifySB()" style="padding:10px 18px;font-size:12px;">
-            🔌 تحقق من الاتصال
-          </button>
+          <button class="btn btn-gold" onclick="wizVerifySB()" style="padding:10px 18px;font-size:12px;">🔌 تحقق</button>
         </div>
       </div>
 
-      <!-- ══ الخطوة 3: بيانات الشركة ══ -->
+      <!-- الخطوة 3 -->
       <div class="wiz-panel" id="wiz-p3">
         <div class="wiz-panel-title">🏢 بيانات الشركة والتفعيل</div>
         <div class="wiz-panel-sub">أدخل معلومات الشركة ومدة الاشتراك</div>
-
         <div class="form-grid">
           <div class="form-group full">
             <label>اسم الشركة *</label>
             <input type="text" id="wiz-company" placeholder="مثال: شركة الأطلس للتجارة"/>
           </div>
-          <div class="form-group">
-            <label>تاريخ انتهاء الاشتراك</label>
-            <input type="date" id="wiz-expires"/>
+          <div class="form-group full">
+            <label>مدة الاشتراك</label>
+            <div class="duration-grid">
+              <button class="dur-btn" onclick="setDuration(1,this)">شهر</button>
+              <button class="dur-btn" onclick="setDuration(3,this)">3 أشهر</button>
+              <button class="dur-btn selected" onclick="setDuration(6,this)">6 أشهر</button>
+              <button class="dur-btn" onclick="setDuration(12,this)">سنة</button>
+              <button class="dur-btn" onclick="setDuration(0,this)" style="border-color:#8b5cf640;color:var(--purple);">♾️ دائم</button>
+              <button class="dur-btn" onclick="setDuration(-1,this)" style="border-color:var(--border2);">تاريخ محدد</button>
+            </div>
+            <input type="date" id="wiz-expires" style="display:none;margin-top:8px;"/>
           </div>
-          <div class="form-group">
+          <div class="form-group full">
             <label>عدد الأجهزة المسموح بها</label>
-            <input type="number" id="wiz-devices" value="5" min="1" max="50"/>
+            <div class="devices-stepper" style="width:fit-content;">
+              <button class="step-btn" onclick="wizStepDev(-1)">−</button>
+              <input class="devices-val" type="number" id="wiz-devices" value="5" min="1" max="100"/>
+              <button class="step-btn" onclick="wizStepDev(1)">+</button>
+            </div>
           </div>
           <div class="form-group full">
             <label>ملاحظة (اختياري)</label>
-            <input type="text" id="wiz-note" placeholder="مثال: اشتراك سنوي — باقة بريميوم"/>
+            <input type="text" id="wiz-note" placeholder="مثال: باقة بريميوم — اشتراك سنوي"/>
           </div>
         </div>
-
-        <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:14px;">
-          <div style="font-size:10px;color:var(--muted);line-height:1.8;">
-            💡 بعد الإنشاء ستحصل على:
-            <br/>• <span style="color:var(--gold)">QR كود</span> يمسحه العميل لتفعيل التطبيق فوراً
-            <br/>• <span style="color:var(--gold)">رابط مباشر</span> يمكن إرساله عبر واتساب أو البريد
-          </div>
+        <div class="hint-box">
+          <p>💡 بعد الإنشاء ستحصل على:<br/>
+          • <span style="color:var(--gold)">QR كود</span> يمسحه العميل لتفعيل التطبيق فوراً<br/>
+          • <span style="color:var(--gold)">رابط مباشر</span> يمكن إرساله عبر واتساب أو البريد</p>
         </div>
       </div>
 
-      <!-- ══ الخطوة 4: النتيجة ══ -->
+      <!-- الخطوة 4 -->
       <div class="wiz-panel" id="wiz-p4">
-        <div id="wiz-generating" style="text-align:center;padding:30px 0;display:none;">
-          <div style="font-size:36px;margin-bottom:12px;">⏳</div>
+        <div id="wiz-generating" style="text-align:center;padding:40px 0;display:none;">
+          <div style="font-size:40px;margin-bottom:12px;">⏳</div>
           <div style="font-size:14px;font-weight:700;color:var(--gold);">جارٍ إنشاء التفعيل…</div>
           <div style="font-size:11px;color:var(--muted);margin-top:6px;">يرجى الانتظار</div>
         </div>
@@ -976,111 +968,61 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions
           <div class="wiz-success-icon">🎉</div>
           <div class="wiz-company-label" id="wiz-res-company"></div>
           <div class="wiz-info-pills" id="wiz-res-pills"></div>
-
-          <!-- QR -->
           <div class="wiz-qr-wrap">
             <canvas id="wiz-qr-canvas" style="display:none;"></canvas>
-            <img id="wiz-qr-img" style="display:none;width:220px;height:220px;" alt="QR Code"/>
+            <img id="wiz-qr-img" style="display:none;width:220px;height:220px;" alt="QR"/>
             <div id="wiz-qr-loading" style="width:220px;height:220px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
               <div style="font-size:28px;">⏳</div>
               <div style="font-size:11px;color:#64748b;font-family:Cairo,sans-serif;">جارٍ توليد QR…</div>
             </div>
           </div>
-
-          <!-- رابط التفعيل -->
           <div class="wiz-link-box">
-            <div class="wiz-link-label">🔗 رابط التفعيل — أرسله للعميل أو دعه يمسح QR</div>
+            <div class="wiz-link-label">🔗 رابط التفعيل</div>
             <div class="copy-field">
-              <input id="wiz-link-input" readonly dir="ltr"
-                style="font-size:10px;color:var(--gold);"/>
+              <input id="wiz-link-input" readonly dir="ltr" style="font-size:10px;color:var(--gold);"/>
               <button class="btn-copy-sm" onclick="wizCopyLink()">📋 نسخ</button>
             </div>
-            <div style="font-size:10px;color:var(--muted);margin-top:8px;text-align:center;">
-              العميل يفتح الرابط → التطبيق يتفعّل تلقائياً 🚀
-            </div>
           </div>
-
           <div class="wiz-result-actions">
             <button class="btn btn-gold" onclick="wizDownloadQR()">⬇️ تحميل QR</button>
             <button class="btn btn-outline" onclick="wizPrintQR()">🖨️ طباعة</button>
             <button class="btn btn-outline" onclick="wizCopyLink()">📋 نسخ الرابط</button>
           </div>
-
-          <!-- دليل تثبيت التطبيق للعميل -->
-          <div style="width:100%;background:#0a0f1a;border:1px solid #1e2535;border-radius:12px;padding:14px;text-align:right;">
-            <div style="font-size:12px;font-weight:800;color:var(--gold);margin-bottom:12px;">📲 كيف يثبّت العميل التطبيق؟</div>
-            <div style="display:flex;flex-direction:column;gap:8px;">
-              <div style="display:flex;gap:10px;align-items:flex-start;">
-                <div style="width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,var(--dim),var(--gold));color:#000;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
-                <div style="font-size:11px;color:var(--muted);line-height:1.6;">
-                  العميل يمسح الـ <strong style="color:var(--text);">QR</strong> بكاميرا الهاتف أو يفتح الرابط في المتصفح
-                </div>
-              </div>
-              <div style="display:flex;gap:10px;align-items:flex-start;">
-                <div style="width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,var(--dim),var(--gold));color:#000;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
-                <div style="font-size:11px;color:var(--muted);line-height:1.6;">
-                  يظهر له شاشة التفعيل — يضغط <strong style="color:var(--text);">تفعيل تلقائي</strong> (الرابط يفعّل مباشرة) أو يمسح QR بالكاميرا
-                </div>
-              </div>
-              <div style="display:flex;gap:10px;align-items:flex-start;">
-                <div style="width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,var(--dim),var(--gold));color:#000;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
-                <div style="font-size:11px;color:var(--muted);line-height:1.6;">
-                  بعد التفعيل يظهر زر <strong style="color:#10b981;">📲 تثبيت التطبيق</strong> — يضغطه ويثبّت كتطبيق على الشاشة الرئيسية
-                </div>
-              </div>
-              <div style="display:flex;gap:10px;align-items:flex-start;">
-                <div style="width:24px;height:24px;border-radius:6px;background:#1e2535;color:var(--muted);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🍎</div>
-                <div style="font-size:10px;color:#475569;line-height:1.6;">
-                  على iPhone: افتح الرابط في <strong style="color:var(--text);">Safari</strong> فقط ← اضغط زر المشاركة ⬆️ ← أضف للشاشة الرئيسية
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button class="btn btn-gold" onclick="wizardClose()" style="width:100%;margin-top:4px;">
-            ✅ إغلاق
-          </button>
+          <button class="btn btn-gold" onclick="wizardClose()" style="width:100%;margin-top:4px;">✅ إغلاق</button>
         </div>
       </div>
 
-    </div><!-- /wizard-body -->
-
-    <!-- Footer -->
+    </div>
     <div class="wizard-footer">
-      <button class="btn btn-outline" id="wiz-btn-back" onclick="wizBack()" style="display:none;">
-        ← رجوع
-      </button>
+      <button class="btn btn-outline" id="wiz-btn-back" onclick="wizBack()" style="display:none;">← رجوع</button>
       <div style="flex:1;display:flex;justify-content:center;">
         <span class="wiz-counter" id="wiz-counter">الخطوة 1 من 4</span>
       </div>
-      <button class="btn btn-gold" id="wiz-btn-next" onclick="wizNext()">
-        التالي ←
-      </button>
+      <button class="btn btn-gold" id="wiz-btn-next" onclick="wizNext()">التالي ←</button>
     </div>
+  </div>
+</div>
 
-  </div><!-- /wizard-modal -->
-</div><!-- /wizard-overlay -->
-
-<!-- Hidden canvas for legacy QR (list regenQR) -->
 <canvas id="qr-canvas" style="display:none;"></canvas>
 <input id="lic-link-input" style="display:none;" readonly/>
-
 <div id="toast"></div>
 
 <script>
 // ══════════════════════════════════════════════
-//  STOC Manager — PWA Edition
+//  CONFIG
 // ══════════════════════════════════════════════
-const SECRET  = "Mounir2026";
-const SB_URL  = "https://pcjbkickwdpouphkygeq.supabase.co";
-const SB_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjamJraWNrd2Rwb3VwaGt5Z2VxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTAxNjI1NiwiZXhwIjoyMDk0NTkyMjU2fQ.cnvbQe4zm6G5pKJ9tFO388FQ_BBoXEulGgxdFq5ra3E";
+const SECRET   = "Mounir2026";
+const SB_URL   = "https://pcjbkickwdpouphkygeq.supabase.co";
+const SB_KEY   = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjamJraWNrd2Rwb3VwaGt5Z2VxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTAxNjI1NiwiZXhwIjoyMDk0NTkyMjU2fQ.cnvbQe4zm6G5pKJ9tFO388FQ_BBoXEulGgxdFq5ra3E";
 const LOCK_KEY = "stoc-admin-lock-v1";
+const PWA_BASE = "https://ayad-mounir.github.io/STOC-PWA/";
 
-// ── تثبيت التطبيق ──
+// ══════════════════════════════════════════════
+//  INSTALL
+// ══════════════════════════════════════════════
 let _deferredInstall = null;
 window.addEventListener("beforeinstallprompt", e => {
-  e.preventDefault();
-  _deferredInstall = e;
+  e.preventDefault(); _deferredInstall = e;
   document.getElementById("install-btn").style.display = "block";
 });
 window.addEventListener("appinstalled", () => {
@@ -1095,17 +1037,18 @@ async function installApp() {
   document.getElementById("install-btn").style.display = "none";
 }
 
-// ── تشفير كلمة السر ──
+// ══════════════════════════════════════════════
+//  LOCK SCREEN
+// ══════════════════════════════════════════════
 async function hashPass(pass) {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pass + "STOC-ADMIN-SALT"));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
+  const buf = await crypto.subtle.digest("SHA-256",
+    new TextEncoder().encode(pass + "STOC-ADMIN-SALT"));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
 }
 
-// ── شاشة القفل ──
 async function initLockScreen() {
   const stored = localStorage.getItem(LOCK_KEY);
   if (!stored) {
-    // أول مرة — اختيار كلمة سر
     document.getElementById("lock-sub").textContent = "اختر كلمة سر للتطبيق";
     document.getElementById("lock-first").style.display = "block";
   }
@@ -1116,25 +1059,19 @@ async function unlockApp() {
   const pass  = document.getElementById("lock-input").value;
   const input = document.getElementById("lock-input");
   const errEl = document.getElementById("lock-err");
-
   if (!pass || pass.length < 4) {
     errEl.textContent = "⚠️ كلمة السر قصيرة جداً (4 أحرف على الأقل)";
     input.classList.add("err");
-    setTimeout(() => input.classList.remove("err"), 500);
-    return;
+    setTimeout(() => input.classList.remove("err"), 500); return;
   }
-
   const hash   = await hashPass(pass);
   const stored = localStorage.getItem(LOCK_KEY);
-
   if (!stored) {
-    // أول مرة — حفظ كلمة السر
     localStorage.setItem(LOCK_KEY, hash);
     errEl.textContent = "";
     openApp();
   } else if (hash === stored) {
-    errEl.textContent = "";
-    openApp();
+    errEl.textContent = ""; openApp();
   } else {
     errEl.textContent = "❌ كلمة السر غير صحيحة";
     input.value = "";
@@ -1150,12 +1087,13 @@ function openApp() {
   setTimeout(() => { ls.style.display = "none"; checkAdminDB(); renderList(); }, 320);
 }
 
-// ── تشغيل عند الفتح ──
 window.addEventListener("DOMContentLoaded", () => initLockScreen());
 
-
+// ══════════════════════════════════════════════
+//  SUPABASE
+// ══════════════════════════════════════════════
 let sb = null;
-let _cache = []; // نسخة محلية سريعة
+let _cache = [];
 
 function initSB() {
   if (sb) return;
@@ -1170,365 +1108,422 @@ function setSBStatus(ok, msg) {
   el.style.background = ok ? "#10b98115" : "#ef444415";
 }
 
-// ── توقيع SHA-256 ──
 async function sign(payload) {
   const msg = JSON.stringify(payload) + SECRET;
-  const buf = await crypto.subtle.digest("SHA-256",
-    new TextEncoder().encode(msg));
-  return Array.from(new Uint8Array(buf))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("").slice(0, 32);
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("").slice(0,32);
 }
 
-// ── توليد كود فريد ──
 function genCode(company) {
-  const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
-  const prefix = company.replace(/\s+/g, "").slice(0, 3).toUpperCase() || "STK";
+  const rand   = Math.random().toString(36).slice(2,8).toUpperCase();
+  const prefix = company.replace(/\s+/g,"").slice(0,3).toUpperCase() || "STK";
   return `STOC-${prefix}-${rand}`;
 }
 
-// ── قراءة الشركات من Supabase ──
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_,reject) => setTimeout(() => reject(new Error("انتهت مهلة الاتصال")), ms))
+  ]);
+}
+
+// ══════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════
 async function loadCompanies() {
   initSB();
-  const { data, error } = await sb
-    .from("stoc_licenses")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) {
-    setSBStatus(false, "خطأ في الاتصال");
-    console.error(error);
-    return [];
-  }
+  const { data, error } = await sb.from("stoc_licenses").select("*").order("created_at",{ascending:false});
+  if (error) { setSBStatus(false, "خطأ في الاتصال"); console.error(error); return []; }
   setSBStatus(true, "متصل");
   _cache = data || [];
   return _cache;
 }
 
-// ── تحديث الإحصائيات ──
 function updateStats(list) {
-  document.getElementById("stat-total").textContent   = list.length;
-  document.getElementById("stat-active").textContent  = list.filter(c => !c.frozen).length;
-  document.getElementById("stat-frozen").textContent  = list.filter(c =>  c.frozen).length;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const soon  = new Date(today); soon.setDate(soon.getDate() + 14);
+  document.getElementById("stat-total").textContent    = list.length;
+  document.getElementById("stat-active").textContent   = list.filter(c => !c.frozen).length;
+  document.getElementById("stat-frozen").textContent   = list.filter(c =>  c.frozen).length;
+  document.getElementById("stat-expiring").textContent = list.filter(c => {
+    if (!c.expires || c.frozen) return false;
+    const exp = new Date(c.expires);
+    return exp >= today && exp <= soon;
+  }).length;
 }
 
-// ── عرض قائمة الشركات ──
-async function renderList() {
+// ══════════════════════════════════════════════
+//  RENDER LIST
+// ══════════════════════════════════════════════
+function expiryStatus(expires) {
+  if (!expires) return { label: "♾️ دائم", cls: "active-chip" };
+  const today = new Date(); today.setHours(0,0,0,0);
+  const exp   = new Date(expires);
+  const diff  = Math.ceil((exp - today) / 86400000);
+  if (diff < 0)  return { label: "⛔ منتهي", cls: "expired" };
+  if (diff <= 14) return { label: `⚠️ ${diff} يوم`, cls: "expiring" };
+  return { label: "📅 " + expires, cls: "" };
+}
+
+async function renderList(query = "") {
   const el = document.getElementById("companies-list");
-  el.innerHTML = `<div class="empty"><div class="ico">⏳</div>جارٍ التحميل…</div>`;
-  const list = await loadCompanies();
-  updateStats(list);
-  if (!list.length) {
-    el.innerHTML = `<div class="empty"><div class="ico">🏭</div>لا توجد شركات بعد — أنشئ أول تفعيل أعلاه</div>`;
+  if (!_cache.length) {
+    el.innerHTML = `<div class="empty-state"><div class="ico">⏳</div><p>جارٍ التحميل…</p></div>`;
+    const list = await loadCompanies();
+    updateStats(list);
+  } else {
+    updateStats(_cache);
+  }
+  const list = query
+    ? _cache.filter(c => c.company.toLowerCase().includes(query.toLowerCase()) || c.code.includes(query.toUpperCase()))
+    : _cache;
+
+  if (!list.length && !query) {
+    el.innerHTML = `<div class="empty-state"><div class="ico">🏭</div><p>لا توجد شركات بعد — أنشئ أول تفعيل أعلاه</p></div>`;
     return;
   }
-  el.innerHTML = list.map(c => `
-    <div class="company-row">
-      <div class="company-info">
-        <div class="company-avatar">${c.company.charAt(0)}</div>
-        <div>
-          <div class="company-name">${c.company}</div>
-          <div class="company-meta">
-            ${c.code} &nbsp;·&nbsp;
-            ${c.devices} أجهزة &nbsp;·&nbsp;
-            ${c.expires ? "ينتهي: " + c.expires : "بدون انتهاء"}
-            ${c.note ? " · " + c.note : ""}
-          </div>
+  if (!list.length && query) {
+    el.innerHTML = `<div class="empty-state"><div class="ico">🔍</div><p>لا نتائج لـ «${query}»</p></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="companies-grid">${list.map(c => {
+    const st = expiryStatus(c.expires);
+    return `
+    <div class="company-card ${c.frozen ? 'frozen' : ''}" onclick="openDrawer('${c.code}')">
+      <div class="company-avatar ${c.frozen ? 'frozen-av' : ''}">${c.company.charAt(0)}</div>
+      <div class="company-body">
+        <div class="company-name">${c.company}</div>
+        <div class="company-meta">
+          <span class="meta-chip">${c.code}</span>
+          <span class="meta-chip">📱 ${c.devices}</span>
+          <span class="meta-chip ${st.cls}">${st.label}</span>
+          <span class="meta-chip ${c.frozen ? 'frozen-chip' : 'active-chip'}">${c.frozen ? '❌ مجمّدة' : '✅ نشطة'}</span>
         </div>
       </div>
-      <div class="company-actions">
-        <span class="status-badge ${!c.frozen ? 'status-active' : 'status-frozen'}">
-          ${!c.frozen ? '✅ نشطة' : '❌ مجمّدة'}
-        </span>
-        <button class="btn btn-outline" onclick="regenQR('${c.code}')" title="عرض QR">📱 QR</button>
-        <button class="btn btn-outline" onclick="copyRowLink('${c.code}')" title="نسخ رابط التفعيل">🔗 رابط</button>
-        <button class="btn btn-outline" onclick="toggleFreeze('${c.code}')">
-          ${!c.frozen ? '🔒 تجميد' : '🔓 تفعيل'}
-        </button>
-        <button class="btn btn-red" onclick="deleteCompany('${c.code}')">🗑</button>
+      <div class="company-actions-mini">
+        <button class="mini-btn" onclick="event.stopPropagation();quickQR('${c.code}')" title="QR">📱</button>
+        <button class="mini-btn" onclick="event.stopPropagation();quickCopyLink('${c.code}')" title="رابط">🔗</button>
       </div>
-    </div>
-  `).join("");
+    </div>`;
+  }).join("")}</div>`;
 }
 
-// ── توليد QR + حفظ (legacy - غير مستخدم، الـ wizard يعوّضه) ──
-async function generate() {
-  toast("⚠️ استخدم زر 'إنشاء تفعيل لشركة جديدة'");
+function filterList(q) {
+  renderList(q);
 }
 
-const PWA_BASE = "https://ayad-mounir.github.io/STOC-PWA/";
-let _lastPayload = null;
-let _lastLink    = null;
+// ══════════════════════════════════════════════
+//  QUICK ACTIONS (بدون فتح drawer)
+// ══════════════════════════════════════════════
+async function quickQR(code) {
+  const c = _cache.find(x => x.code === code);
+  if (!c) return;
+  const payload = buildPayload(c);
+  await showQR(payload, c.company, c.expires, c.devices);
+}
+
+async function quickCopyLink(code) {
+  const c = _cache.find(x => x.code === code);
+  if (!c) return;
+  const link = buildLink(buildPayload(c));
+  await copyToClipboard(link);
+  toast("📋 تم نسخ رابط تفعيل " + c.company);
+}
+
+// ══════════════════════════════════════════════
+//  MANAGE DRAWER
+// ══════════════════════════════════════════════
+let _drCode = null;
+
+function openDrawer(code) {
+  const c = _cache.find(x => x.code === code);
+  if (!c) return;
+  _drCode = code;
+
+  // Header
+  document.getElementById("dr-avatar").textContent = c.company.charAt(0);
+  document.getElementById("dr-avatar").className   = "drawer-avatar" + (c.frozen ? " frozen-av" : "");
+  document.getElementById("dr-name").textContent   = c.company;
+  document.getElementById("dr-code").textContent   = c.code;
+
+  // Expiry info
+  const st = expiryStatus(c.expires);
+  const expEl = document.getElementById("dr-expiry-info");
+  const expTx = document.getElementById("dr-expiry-text");
+  expTx.textContent = c.expires
+    ? `تنتهي في ${c.expires}  (${st.label})`
+    : "بدون انتهاء — دائم ♾️";
+  expEl.style.background = st.cls === "expired" ? "#ef444415" : st.cls === "expiring" ? "#78350f15" : "var(--surf2)";
+  expEl.style.borderColor= st.cls === "expired" ? "#ef444430" : st.cls === "expiring" ? "#fbbf2430" : "var(--border)";
+
+  // Devices
+  document.getElementById("dr-devices").value = c.devices;
+
+  // Freeze button
+  const fb = document.getElementById("dr-freeze-btn");
+  fb.className = "action-btn " + (c.frozen ? "unfreeze" : "freeze");
+  fb.innerHTML = c.frozen ? "🔓 تفعيل" : "🔒 تجميد";
+
+  // Link
+  const link = buildLink(buildPayload(c));
+  document.getElementById("dr-link-input").value = link;
+
+  // Custom date default
+  document.getElementById("dr-custom-date").value = c.expires || "";
+
+  // Open
+  document.getElementById("drawer-overlay").classList.add("open");
+  document.getElementById("manage-drawer").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeDrawer() {
+  document.getElementById("drawer-overlay").classList.remove("open");
+  document.getElementById("manage-drawer").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+// تمديد الاشتراك
+async function extendSub(months) {
+  const c = _cache.find(x => x.code === _drCode);
+  if (!c) return;
+  let newExpiry;
+  if (months === 0) {
+    newExpiry = null; // دائم
+  } else {
+    const base = (c.expires && new Date(c.expires) > new Date()) ? new Date(c.expires) : new Date();
+    base.setMonth(base.getMonth() + months);
+    newExpiry = base.toISOString().slice(0,10);
+  }
+  await updateExpiry(newExpiry);
+}
+
+async function setCustomDate() {
+  const val = document.getElementById("dr-custom-date").value;
+  if (!val) { toast("⚠️ اختر تاريخاً أولاً"); return; }
+  await updateExpiry(val);
+}
+
+async function updateExpiry(newExpiry) {
+  initSB();
+  const { error } = await sb.from("stoc_licenses")
+    .update({ expires: newExpiry })
+    .eq("code", _drCode);
+  if (error) { toast("❌ خطأ: " + error.message); return; }
+  const label = newExpiry ? `📅 تم التمديد حتى ${newExpiry}` : "♾️ تم التحويل إلى دائم";
+  toast(label);
+  await loadCompanies();
+  updateStats(_cache);
+  openDrawer(_drCode); // تحديث البيانات في الـ drawer
+  renderList(document.getElementById("search-input").value);
+}
+
+// تعديل الأجهزة
+function stepDevices(delta) {
+  const inp = document.getElementById("dr-devices");
+  inp.value = Math.max(1, Math.min(100, parseInt(inp.value || 5) + delta));
+}
+
+async function saveDevices() {
+  const devices = parseInt(document.getElementById("dr-devices").value) || 5;
+  initSB();
+  const { error } = await sb.from("stoc_licenses")
+    .update({ devices })
+    .eq("code", _drCode);
+  if (error) { toast("❌ خطأ: " + error.message); return; }
+  toast(`✅ تم الحفظ — ${devices} أجهزة`);
+  await loadCompanies();
+  renderList(document.getElementById("search-input").value);
+}
+
+// تجميد / تفعيل
+async function drToggleFreeze() {
+  const c = _cache.find(x => x.code === _drCode);
+  if (!c) return;
+  initSB();
+  const { error } = await sb.from("stoc_licenses")
+    .update({ frozen: !c.frozen })
+    .eq("code", _drCode);
+  if (error) { toast("❌ خطأ: " + error.message); return; }
+  toast(c.frozen ? "✅ تم تفعيل الشركة" : "🔒 تم تجميد الشركة");
+  await loadCompanies();
+  openDrawer(_drCode);
+  renderList(document.getElementById("search-input").value);
+}
+
+// حذف
+async function drDelete() {
+  const c = _cache.find(x => x.code === _drCode);
+  if (!c) return;
+  if (!confirm(`هل أنت متأكد من حذف "${c.company}" نهائياً؟\nلا يمكن التراجع عن هذه العملية.`)) return;
+  initSB();
+  const { error } = await sb.from("stoc_licenses").delete().eq("code", _drCode);
+  if (error) { toast("❌ خطأ في الحذف: " + error.message); return; }
+  toast("🗑️ تم الحذف نهائياً");
+  closeDrawer();
+  await loadCompanies();
+  updateStats(_cache);
+  renderList(document.getElementById("search-input").value);
+}
+
+// QR من الـ drawer
+async function drQR() {
+  const c = _cache.find(x => x.code === _drCode);
+  if (!c) return;
+  closeDrawer();
+  await showQR(buildPayload(c), c.company, c.expires, c.devices);
+}
+
+async function drCopyLink() {
+  const link = document.getElementById("dr-link-input").value;
+  await copyToClipboard(link);
+  toast("📋 تم نسخ رابط التفعيل");
+}
+
+// ══════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════
+function buildPayload(c) {
+  return { company: c.company, url: c.sb_url || "", key: c.sb_key || "",
+           expires: c.expires || "", devices: c.devices, code: c.code, v: 1, sig: c.sig };
+}
+
+function buildLink(payload) {
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  return PWA_BASE + "?lic=" + encoded;
+}
+
+async function copyToClipboard(text) {
+  try { await navigator.clipboard.writeText(text); }
+  catch { const ta = document.createElement("textarea"); ta.value = text;
+    document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); }
+}
+
+// ══════════════════════════════════════════════
+//  QR DISPLAY
+// ══════════════════════════════════════════════
+let _lastPayload = null, _wizLink = null, _wizPayload = null;
 
 async function showQR(payload, company, expires, devices) {
   _lastPayload = payload;
-
-  // ── بناء رابط التفعيل ──
-  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-  const link    = PWA_BASE + "?lic=" + encoded;
-  _lastLink     = link;
-  _wizLink      = link;
-  _wizPayload   = payload;
-
-  // ── فتح الـ Wizard في الخطوة 4 لعرض QR الموجود ──
+  const link   = buildLink(payload);
+  _wizLink     = link; _wizPayload = payload;
   _wizStep = 4;
   document.getElementById("wizard-overlay").classList.add("open");
   document.body.style.overflow = "hidden";
   wizRenderStep();
-
-  // إخفاء أزرار التنقل (عرض فقط)
   document.getElementById("wiz-btn-next").style.display = "none";
   document.getElementById("wiz-btn-back").style.display = "inline-flex";
-
-  // توليد QR
   await renderQR(link, "wiz-qr-canvas", "wiz-qr-img", "wiz-qr-loading");
-  const oldCanvas = document.getElementById("qr-canvas");
-  if (window.QRCode && oldCanvas) {
-    QRCode.toCanvas(oldCanvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } }).catch(()=>{});
-  }
-
   document.getElementById("wiz-res-company").textContent = "🏢 " + company;
-  const pills = [];
-  pills.push(`<span class="wiz-pill">🔑 ${payload.code}</span>`);
-  pills.push(`<span class="wiz-pill">📱 ${devices} أجهزة</span>`);
-  if (expires) pills.push(`<span class="wiz-pill">📅 تنتهي ${expires}</span>`);
-  else         pills.push(`<span class="wiz-pill">♾️ بدون انتهاء</span>`);
+  const pills = [
+    `<span class="wiz-pill">🔑 ${payload.code}</span>`,
+    `<span class="wiz-pill">📱 ${devices} أجهزة</span>`,
+    expires ? `<span class="wiz-pill">📅 تنتهي ${expires}</span>` : `<span class="wiz-pill">♾️ دائم</span>`
+  ];
   document.getElementById("wiz-res-pills").innerHTML = pills.join("");
-
   document.getElementById("wiz-link-input").value = link;
-  document.getElementById("lic-link-input").value = link;
-
   document.getElementById("wiz-generating").style.display = "none";
   document.getElementById("wiz-result-box").style.display  = "flex";
 }
 
-// ── إعادة توليد QR لشركة موجودة ──
-async function regenQR(code) {
-  const c = _cache.find(x => x.code === code);
-  if (!c) {
-    // إعادة التحميل ثم المحاولة مجدداً
-    await loadCompanies();
-    const c2 = _cache.find(x => x.code === code);
-    if (!c2) { toast("⚠️ لم يتم العثور على الشركة — أعد تحميل الصفحة"); return; }
-    return regenQR(code);
-  }
-  // إعادة بناء payload كما كان
-  const payload = {
-    company: c.company,
-    url:     c.sb_url  || "",
-    key:     c.sb_key  || "",
-    expires: c.expires || "",
-    devices: c.devices,
-    code:    c.code,
-    v: 1,
-    sig: c.sig
-  };
-  await showQR(payload, c.company, c.expires, c.devices);
-  document.getElementById("qr-result").scrollIntoView({ behavior: "smooth" });
-}
-
-// ── نسخ رابط التفعيل مباشرة من القائمة ──
-async function copyRowLink(code) {
-  const c = _cache.find(x => x.code === code);
-  if (!c) { toast("⚠️ لم يتم العثور على الشركة"); return; }
-  const payload = {
-    company: c.company,
-    url:     c.sb_url  || "",
-    key:     c.sb_key  || "",
-    expires: c.expires || "",
-    devices: c.devices,
-    code:    c.code,
-    v: 1,
-    sig: c.sig
-  };
-  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-  const link = PWA_BASE + "?lic=" + encoded;
-  try {
-    await navigator.clipboard.writeText(link);
-    toast("📋 تم نسخ رابط تفعيل " + c.company);
-  } catch(e) {
-    // fallback لأجهزة لا تدعم clipboard API
-    const ta = document.createElement("textarea");
-    ta.value = link;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    document.body.removeChild(ta);
-    toast("📋 تم نسخ الرابط");
-  }
-}
-
-// ── تجميد / تفعيل ──
-async function toggleFreeze(code) {
-  const c = _cache.find(x => x.code === code);
-  if (!c) { toast("⚠️ لم يتم العثور على الشركة — أعد تحميل الصفحة"); return; }
-  const newFrozen = !c.frozen;
-  initSB();
-  const { error } = await sb.from("stoc_licenses")
-    .update({ frozen: newFrozen })
-    .eq("code", code);
-  if (error) { toast("❌ خطأ: " + error.message); return; }
-  toast(newFrozen ? "🔒 تم تجميد الشركة" : "✅ تم تفعيل الشركة");
-  await renderList();
-}
-
-// ── حذف ──
-async function deleteCompany(code) {
-  if (!confirm("هل أنت متأكد من حذف هذه الشركة؟")) return;
-  initSB();
-  const { error } = await sb.from("stoc_licenses")
-    .delete()
-    .eq("code", code);
-  if (error) { toast("❌ خطأ في الحذف: " + error.message); return; }
-  toast("🗑 تم الحذف");
-  await renderList();
-}
-
-// ── تحميل QR ──
-function downloadQR() {
-  const canvas = document.getElementById("qr-canvas");
-  const name = _lastPayload ? _lastPayload.company.replace(/\s+/g, "-") : "STOC";
-  const a = document.createElement("a");
-  a.download = `STOC-QR-${name}.png`;
-  a.href = canvas.toDataURL("image/png");
-  a.click();
-  toast("⬇️ تم تحميل QR");
-}
-
-// ── طباعة ──
-function printQR() {
-  const canvas = document.getElementById("qr-canvas");
-  const company = _lastPayload ? _lastPayload.company : "";
-  const code    = _lastPayload ? _lastPayload.code : "";
-  const img     = canvas.toDataURL("image/png");
-  const w = window.open("", "_blank");
-  w.document.write(`
-    <html dir="rtl"><head>
-    <style>
-      body { font-family: Cairo, sans-serif; text-align: center; padding: 40px; background: #fff; }
-      h2 { font-size: 22px; margin-bottom: 8px; }
-      p  { font-size: 13px; color: #666; margin-bottom: 20px; }
-      img { border: 2px solid #eee; padding: 12px; border-radius: 12px; }
-      small { display: block; margin-top: 16px; font-size: 11px; color: #999; }
-    </style>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800&display=swap" rel="stylesheet"/>
-    </head><body>
-    <h2>🏢 ${company}</h2>
-    <p>كود التفعيل: <strong>${code}</strong></p>
-    <img src="${img}" width="220"/>
-    <small>STOC PWA — امسح هذا QR لتفعيل التطبيق</small>
-    </body></html>
-  `);
-  w.document.close();
-  w.print();
-}
-
-// ── نسخ الرابط ──
-function copyLink() {
-  if (!_lastLink) return;
-  navigator.clipboard.writeText(_lastLink).then(() => toast("📋 تم نسخ رابط التفعيل"));
-}
-
-// ── Toast ──
-function toast(msg) {
-  const el = document.getElementById("toast");
-  el.textContent = msg;
-  el.classList.add("show");
-  setTimeout(() => el.classList.remove("show"), 2800);
-}
-
-// ── Init ──
-window.addEventListener("DOMContentLoaded", () => {
-  // تاريخ افتراضي لحقل wizard
-  const d = new Date();
-  d.setFullYear(d.getFullYear() + 1);
-  const wizExp = document.getElementById("wiz-expires");
-  if (wizExp) wizExp.value = d.toISOString().slice(0, 10);
-});
-
-// ══════════════════════════════════════════════
-//  QR — توليد مع Fallback
-// ══════════════════════════════════════════════
 async function renderQR(link, canvasId, imgId, loadingId) {
-  const canvas   = document.getElementById(canvasId);
-  const img      = document.getElementById(imgId);
-  const loading  = document.getElementById(loadingId);
-
-  // محاولة 1: مكتبة QRCode المحلية → canvas
+  const canvas  = document.getElementById(canvasId);
+  const img     = document.getElementById(imgId);
+  const loading = document.getElementById(loadingId);
   if (window.QRCode) {
     try {
-      await QRCode.toCanvas(canvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } });
+      await QRCode.toCanvas(canvas, link, { width:220, margin:1, color:{dark:"#000",light:"#fff"} });
       canvas.style.display = "block";
-      if (loading) loading.style.display = "none";
-      return;
-    } catch(e) { console.warn("QRCode.toCanvas failed:", e); }
-
-    // محاولة 2: toDataURL → img
+      if (loading) loading.style.display = "none"; return;
+    } catch(e) {}
     try {
-      const url = await QRCode.toDataURL(link, { width: 220, margin: 1 });
-      img.src = url;
-      img.style.display = "block";
-      if (loading) loading.style.display = "none";
-      return;
-    } catch(e) { console.warn("QRCode.toDataURL failed:", e); }
+      const url = await QRCode.toDataURL(link, { width:220, margin:1 });
+      img.src = url; img.style.display = "block";
+      if (loading) loading.style.display = "none"; return;
+    } catch(e) {}
   }
-
-  // محاولة 3: خدمة QR خارجية (بدون تثبيت)
-  try {
-    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(link)}`;
-    img.onload  = () => { img.style.display = "block"; if (loading) loading.style.display = "none"; };
-    img.onerror = () => {
-      if (loading) {
-        loading.innerHTML = `<div style="font-size:24px;">⚠️</div><div style="font-size:10px;color:#ef4444;font-family:Cairo,sans-serif;text-align:center;">تعذّر توليد QR<br/>استخدم الرابط للنسخ</div>`;
-      }
-    };
-    return;
-  } catch(e) { console.warn("External QR service failed:", e); }
-
-  // الحالة النهائية: أظهر رسالة خطأ
-  if (loading) loading.innerHTML = `<div style="font-size:24px;">⚠️</div><div style="font-size:10px;color:#ef4444;font-family:Cairo,sans-serif;text-align:center;">تعذّر توليد QR<br/>استخدم الرابط للنسخ</div>`;
+  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(link)}`;
+  img.onload  = () => { img.style.display="block"; if(loading) loading.style.display="none"; };
+  img.onerror = () => { if(loading) loading.innerHTML=`<div style="font-size:24px;">⚠️</div><div style="font-size:10px;color:#ef4444;font-family:Cairo,sans-serif;text-align:center;">تعذّر توليد QR<br/>استخدم الرابط</div>`; };
 }
 
 // ══════════════════════════════════════════════
-//  إعداد قاعدة بيانات الأدمين — stoc_licenses
+//  DB CHECK
 // ══════════════════════════════════════════════
 async function checkAdminDB() {
   try {
     initSB();
     const { error } = await sb.from("stoc_licenses").select("id").limit(1);
-    if (error && (error.code === "42P01" || (error.message && error.message.includes("does not exist")))) {
-      // الجدول غير موجود — أظهر لافتة الإعداد
-      showAdminSetupBanner();
+    if (error && (error.code === "42P01" || error.message?.includes("does not exist"))) {
+      document.getElementById("admin-setup-banner").style.display = "block";
     }
-  } catch(e) { console.warn("DB check error:", e); }
+  } catch(e) { console.warn("DB check:", e); }
 }
 
-function showAdminSetupBanner() {
-  const banner = document.getElementById("admin-setup-banner");
-  if (banner) banner.style.display = "block";
+function copySetupSql() {
+  const sql = document.getElementById("setup-sql-code").textContent;
+  navigator.clipboard.writeText(sql)
+    .then(()  => toast("📋 تم نسخ SQL — الصقه في SQL Editor"))
+    .catch(()  => toast("⚠️ النسخ غير متاح — انسخ يدوياً"));
 }
 
 // ══════════════════════════════════════════════
-//  WIZARD — منطق التحكم
+//  TOAST
 // ══════════════════════════════════════════════
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 2800);
+}
 
-let _wizStep      = 1;
-let _wizSbVerified = false;
-let _wizPayload   = null;
-let _wizLink      = null;
+// ══════════════════════════════════════════════
+//  WIZARD — LOGIC
+// ══════════════════════════════════════════════
+let _wizStep = 1, _wizSbVerified = false;
+let _selectedDuration = 6; // default 6 months
 
-// ── فتح / إغلاق ──
+function setDuration(months, btn) {
+  _selectedDuration = months;
+  document.querySelectorAll(".dur-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  const dateInp = document.getElementById("wiz-expires");
+  if (months === -1) {
+    dateInp.style.display = "block";
+  } else {
+    dateInp.style.display = "none";
+    if (months > 0) {
+      const d = new Date();
+      d.setMonth(d.getMonth() + months);
+      dateInp.value = d.toISOString().slice(0,10);
+    } else {
+      dateInp.value = "";
+    }
+  }
+}
+
+function wizStepDev(delta) {
+  const inp = document.getElementById("wiz-devices");
+  inp.value = Math.max(1, Math.min(100, parseInt(inp.value || 5) + delta));
+}
+
 function wizardOpen() {
-  _wizStep       = 1;
-  _wizSbVerified = false;
-  _wizPayload    = null;
-  _wizLink       = null;
-  // إعادة ضبط QR
+  _wizStep = 1; _wizSbVerified = false; _wizPayload = null; _wizLink = null;
   const canvas = document.getElementById("wiz-qr-canvas");
   const img    = document.getElementById("wiz-qr-img");
   const load   = document.getElementById("wiz-qr-loading");
-  if (canvas)  { canvas.style.display = "none"; const ctx = canvas.getContext("2d"); if(ctx) ctx.clearRect(0,0,canvas.width,canvas.height); }
-  if (img)     { img.style.display = "none"; img.src = ""; }
-  if (load)    { load.style.display = "flex"; load.innerHTML = '<div style="font-size:28px;">⏳</div><div style="font-size:11px;color:#64748b;font-family:Cairo,sans-serif;">جارٍ توليد QR…</div>'; }
+  if (canvas) { canvas.style.display="none"; const ctx=canvas.getContext("2d"); if(ctx) ctx.clearRect(0,0,canvas.width,canvas.height); }
+  if (img)    { img.style.display="none"; img.src=""; }
+  if (load)   { load.style.display="flex"; load.innerHTML='<div style="font-size:28px;">⏳</div><div style="font-size:11px;color:#64748b;font-family:Cairo,sans-serif;">جارٍ توليد QR…</div>'; }
+  document.getElementById("wiz-result-box").style.display  = "none";
+  document.getElementById("wiz-generating").style.display  = "none";
+  // reset duration to 6 months
+  _selectedDuration = 6;
+  const d = new Date(); d.setMonth(d.getMonth() + 6);
+  document.getElementById("wiz-expires").value = d.toISOString().slice(0,10);
+  document.getElementById("wiz-expires").style.display = "none";
+  document.querySelectorAll(".dur-btn").forEach((b,i)=>b.classList.toggle("selected",i===2));
   wizRenderStep();
   document.getElementById("wizard-overlay").classList.add("open");
   document.body.style.overflow = "hidden";
@@ -1537,46 +1532,30 @@ function wizardOpen() {
 function wizardClose() {
   document.getElementById("wizard-overlay").classList.remove("open");
   document.body.style.overflow = "";
-  // إعادة تحميل قائمة الشركات عند الإغلاق إذا تم إنشاء تفعيل
-  if (_wizPayload) renderList();
+  if (_wizPayload) {
+    loadCompanies().then(list => { updateStats(list); renderList(document.getElementById("search-input").value); });
+  }
 }
 
 function wizardOverlayClick(e) {
   if (e.target === document.getElementById("wizard-overlay")) wizardClose();
 }
 
-// ── رسم الخطوة الحالية ──
 function wizRenderStep() {
   const total = 4;
-
-  // تحديث dots
   for (let i = 1; i <= total; i++) {
-    const dot = document.getElementById("wsd-" + i);
-    dot.classList.remove("active", "done");
-    if (i < _wizStep)       dot.classList.add("done");
-    else if (i === _wizStep) dot.classList.add("active");
-    // تحديث رقم أو ✓ للـ done
+    const dot    = document.getElementById("wsd-" + i);
     const circle = dot.querySelector(".wiz-step-circle");
-    if (i < _wizStep) circle.textContent = "✓";
-    else if (i === 4) circle.textContent = "✓";
-    else              circle.textContent = i;
+    dot.classList.remove("active","done");
+    if      (i < _wizStep)  { dot.classList.add("done");   circle.textContent = "✓"; }
+    else if (i === _wizStep) { dot.classList.add("active"); circle.textContent = (i===4?"✓":i); }
+    else                    { circle.textContent = (i===4?"✓":i); }
+    document.getElementById("wiz-p"+i).classList.toggle("active", i === _wizStep);
   }
-
-  // إظهار Panel المناسب
-  for (let i = 1; i <= total; i++) {
-    const p = document.getElementById("wiz-p" + i);
-    p.classList.toggle("active", i === _wizStep);
-  }
-
-  // العداد
   document.getElementById("wiz-counter").textContent = `الخطوة ${_wizStep} من ${total}`;
-
-  // أزرار التنقل
   const btnBack = document.getElementById("wiz-btn-back");
   const btnNext = document.getElementById("wiz-btn-next");
-
   btnBack.style.display = _wizStep > 1 ? "inline-flex" : "none";
-
   if (_wizStep === 4) {
     btnNext.style.display = "none";
   } else if (_wizStep === 3) {
@@ -1588,230 +1567,143 @@ function wizRenderStep() {
   }
 }
 
-// ── التالي ──
 async function wizNext() {
-  if (_wizStep === 1) {
-    // الخطوة 1 → 2: لا يوجد تحقق إلزامي
-    _wizStep = 2;
-    wizRenderStep();
-    return;
-  }
-
+  if (_wizStep === 1) { _wizStep = 2; wizRenderStep(); return; }
   if (_wizStep === 2) {
-    // التحقق من الحقول
     const url = document.getElementById("wiz-url").value.trim();
     const key = document.getElementById("wiz-key").value.trim();
-    if (!url || !key) {
-      toast("⚠️ يرجى إدخال Project URL و Anon Key");
-      return;
-    }
-    if (!url.startsWith("https://") || !url.includes("supabase.co")) {
-      toast("⚠️ الـ URL غير صحيح — تأكد من الصيغة");
-      return;
-    }
-    // تحقق تلقائي إذا لم يُتحقق بعد
-    if (!_wizSbVerified) {
-      const ok = await wizVerifySB();
-      if (!ok) return;
-    }
-    _wizStep = 3;
-    wizRenderStep();
-    return;
+    if (!url || !key) { toast("⚠️ يرجى إدخال Project URL و Anon Key"); return; }
+    if (!url.startsWith("https://") || !url.includes("supabase.co")) { toast("⚠️ الـ URL غير صحيح"); return; }
+    if (!_wizSbVerified) { const ok = await wizVerifySB(); if (!ok) return; }
+    _wizStep = 3; wizRenderStep(); return;
   }
-
   if (_wizStep === 3) {
-    // التحقق من الحقول
     const company = document.getElementById("wiz-company").value.trim();
-    if (!company) {
-      toast("⚠️ يرجى إدخال اسم الشركة");
-      document.getElementById("wiz-company").focus();
-      return;
-    }
-    _wizStep = 4;
-    wizRenderStep();
-    try {
-      await wizGenerate();
-    } catch(e) {
-      console.error("wizGenerate failed:", e);
-      toast("❌ خطأ: " + (e.message || e));
+    if (!company) { toast("⚠️ يرجى إدخال اسم الشركة"); document.getElementById("wiz-company").focus(); return; }
+    _wizStep = 4; wizRenderStep();
+    try { await wizGenerate(); } catch(e) {
+      console.error(e); toast("❌ خطأ: " + (e.message || e));
       document.getElementById("wiz-generating").style.display = "none";
     }
-    return;
   }
 }
 
-// ── رجوع ──
 function wizBack() {
   if (_wizStep > 1) {
     _wizStep--;
     wizRenderStep();
-    // إخفاء نتيجة الخطوة 4 عند الرجوع
     if (_wizStep < 4) {
-      document.getElementById("wiz-result-box").style.display  = "none";
-      document.getElementById("wiz-generating").style.display  = "none";
+      document.getElementById("wiz-result-box").style.display = "none";
+      document.getElementById("wiz-generating").style.display = "none";
     }
   }
-}
-
-// ── التحقق من اتصال Supabase ──
-// ── مساعد: تنفيذ مع timeout ──
-function withTimeout(promise, ms) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("انتهت مهلة الاتصال — تحقق من URL")), ms)
-    )
-  ]);
 }
 
 async function wizVerifySB() {
-  // تنظيف الـ URL تلقائياً (إزالة / من النهاية)
   const urlEl = document.getElementById("wiz-url");
-  urlEl.value = urlEl.value.trim().replace(/\/+$/, "");
+  urlEl.value = urlEl.value.trim().replace(/\/+$/,"");
   const url = urlEl.value;
   const key = document.getElementById("wiz-key").value.trim();
   const statusEl = document.getElementById("wiz-sb-status");
-
-  if (!url || !key) {
-    statusEl.textContent = "⚠️ أدخل URL والـ Key أولاً";
-    statusEl.style.color = "var(--gold)";
-    return false;
-  }
-
-  statusEl.textContent = "⏳ جارٍ التحقق…";
-  statusEl.style.color = "var(--muted)";
-
+  if (!url || !key) { statusEl.textContent = "⚠️ أدخل URL والـ Key أولاً"; statusEl.style.color="var(--gold)"; return false; }
+  statusEl.textContent = "⏳ جارٍ التحقق…"; statusEl.style.color = "var(--muted)";
   try {
     const testSB = window.supabase.createClient(url, key);
-    const { error } = await withTimeout(
-      testSB.from("stoc_items").select("id").limit(1),
-      8000
-    );
-
-    // خطأ "relation does not exist" يعني الاتصال نجح لكن الجدول غير موجود بعد
+    const { error } = await withTimeout(testSB.from("stoc_items").select("id").limit(1), 8000);
     const connOk = !error || error.code === "42P01" || error.message?.includes("does not exist");
-
     if (connOk) {
-      statusEl.textContent = "🟢 الاتصال ناجح — يمكنك المتابعة";
-      statusEl.style.color = "var(--green)";
-      _wizSbVerified = true;
-      return true;
+      statusEl.textContent = "🟢 الاتصال ناجح — يمكنك المتابعة"; statusEl.style.color = "var(--green)";
+      _wizSbVerified = true; return true;
     } else {
-      statusEl.textContent = "🔴 " + (error?.message || "فشل الاتصال — تحقق من URL والـ Key");
-      statusEl.style.color = "var(--red)";
-      _wizSbVerified = false;
-      return false;
+      statusEl.textContent = "🔴 " + (error?.message || "فشل الاتصال"); statusEl.style.color = "var(--red)";
+      _wizSbVerified = false; return false;
     }
   } catch(e) {
-    statusEl.textContent = "🔴 " + (e.message || "تعذّر الاتصال");
-    statusEl.style.color = "var(--red)";
-    _wizSbVerified = false;
-    return false;
+    statusEl.textContent = "🔴 " + (e.message || "تعذّر الاتصال"); statusEl.style.color = "var(--red)";
+    _wizSbVerified = false; return false;
   }
 }
 
 function wizResetSbStatus() {
   _wizSbVerified = false;
   const el = document.getElementById("wiz-sb-status");
-  if (el) {
-    el.textContent = "⏳ في انتظار التحقق…";
-    el.style.color = "var(--muted)";
-  }
+  if (el) { el.textContent = "⏳ في انتظار التحقق…"; el.style.color = "var(--muted)"; }
 }
 
-// ── إنشاء التفعيل (الخطوة 4) ──
 async function wizGenerate() {
   const company = document.getElementById("wiz-company").value.trim();
-  const url     = document.getElementById("wiz-url").value.trim().replace(/\/+$/, "");
+  const url     = document.getElementById("wiz-url").value.trim().replace(/\/+$/,"");
   const key     = document.getElementById("wiz-key").value.trim();
-  const expires = document.getElementById("wiz-expires").value;
   const devices = parseInt(document.getElementById("wiz-devices").value) || 5;
   const note    = document.getElementById("wiz-note").value.trim();
+  let   expires = null;
+  if (_selectedDuration === -1) {
+    expires = document.getElementById("wiz-expires").value || null;
+  } else if (_selectedDuration > 0) {
+    expires = document.getElementById("wiz-expires").value || null;
+  }
 
   document.getElementById("wiz-generating").style.display = "block";
   document.getElementById("wiz-result-box").style.display = "none";
 
-  let sig, code, payloadToSign;
-  try {
-    code = genCode(company);
-    payloadToSign = { company, url, key, expires, devices, code, v: 1 };
-    sig = await sign(payloadToSign);
-  } catch(signErr) {
-    document.getElementById("wiz-generating").style.display = "none";
-    toast("❌ خطأ في التوقيع: " + (signErr.message || signErr));
-    return;
-  }
+  const code = genCode(company);
+  const payloadToSign = { company, url, key, expires: expires || "", devices, code, v:1 };
+  const sig  = await sign(payloadToSign);
   const payload = { ...payloadToSign, sig };
 
-  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-  const link    = PWA_BASE + "?lic=" + encoded;
-  _wizLink      = link;
-  _wizPayload   = payload;
-  _lastPayload  = payload;
-  _lastLink     = link;
+  const link = buildLink(payload);
+  _wizLink = link; _wizPayload = payload;
+  _lastPayload = payload;
 
-  // ── 🔒 الحفظ في Supabase أولاً — قبل عرض أي شيء ──
-  // (الترخيص يجب أن يكون موجوداً في DB قبل أن يصل إليه العميل)
   try {
     initSB();
-    const { error: insertErr } = await withTimeout(
+    const { error } = await withTimeout(
       sb.from("stoc_licenses").insert({
         company, code, sb_url: url, sb_key: key,
         expires: expires || null, devices, frozen: false, note: note || null, sig
       }), 10000
     );
-    if (insertErr) {
+    if (error) {
       document.getElementById("wiz-generating").style.display = "none";
       document.getElementById("wiz-btn-back").style.display = "inline-flex";
-      toast("❌ فشل الحفظ — لا يمكن إنشاء QR: " + insertErr.message);
-      return; // لا نُكمل — لا نُعطي QR لترخيص غير محفوظ
+      toast("❌ فشل الحفظ: " + error.message); return;
     }
-  } catch(saveEx) {
+  } catch(e) {
     document.getElementById("wiz-generating").style.display = "none";
     document.getElementById("wiz-btn-back").style.display = "inline-flex";
-    toast("❌ تعذّر الاتصال بـ Supabase — تحقق من الاتصال بالإنترنت");
-    return;
+    toast("❌ تعذّر الاتصال بـ Supabase"); return;
   }
 
-  // ── ✅ الحفظ نجح — الآن نعرض النتيجة ──
   document.getElementById("wiz-res-company").textContent = "🏢 " + company;
-  const pills = [];
-  pills.push(`<span class="wiz-pill">🔑 ${code}</span>`);
-  pills.push(`<span class="wiz-pill">📱 ${devices} أجهزة</span>`);
-  if (expires) pills.push(`<span class="wiz-pill">📅 تنتهي ${expires}</span>`);
-  else         pills.push(`<span class="wiz-pill">♾️ بدون انتهاء</span>`);
-  if (note)    pills.push(`<span class="wiz-pill">📝 ${note}</span>`);
+  const pills = [
+    `<span class="wiz-pill">🔑 ${code}</span>`,
+    `<span class="wiz-pill">📱 ${devices} أجهزة</span>`,
+    expires ? `<span class="wiz-pill">📅 تنتهي ${expires}</span>` : `<span class="wiz-pill">♾️ دائم</span>`,
+    note ? `<span class="wiz-pill">📝 ${note}</span>` : ""
+  ];
   document.getElementById("wiz-res-pills").innerHTML = pills.join("");
   document.getElementById("wiz-link-input").value = link;
-  document.getElementById("lic-link-input").value = link;
   document.getElementById("wiz-generating").style.display = "none";
   document.getElementById("wiz-result-box").style.display  = "flex";
   document.getElementById("wiz-btn-next").style.display = "none";
   document.getElementById("wiz-btn-back").style.display = "none";
-  toast("✅ تم الحفظ وإنشاء التفعيل!");
-  renderList();
-
-  // ── توليد QR (canvas + img fallback + external service) ──
+  toast("✅ تم الإنشاء بنجاح!");
+  await loadCompanies();
+  updateStats(_cache);
+  renderList(document.getElementById("search-input").value);
   await renderQR(link, "wiz-qr-canvas", "wiz-qr-img", "wiz-qr-loading");
-  try {
-    const oldCanvas = document.getElementById("qr-canvas");
-    if (window.QRCode && oldCanvas) await QRCode.toCanvas(oldCanvas, link, { width: 220, margin: 1, color: { dark: "#000000", light: "#ffffff" } });
-  } catch(e) { /* legacy canvas silent fail */ }
 }
 
-// ── أزرار النتيجة في الـ Wizard ──
 function wizCopyLink() {
   if (!_wizLink) return;
-  navigator.clipboard.writeText(_wizLink).then(() => toast("📋 تم نسخ رابط التفعيل"));
+  copyToClipboard(_wizLink).then(() => toast("📋 تم نسخ رابط التفعيل"));
 }
 
 function wizDownloadQR() {
   const canvas = document.getElementById("wiz-qr-canvas");
-  const name = _wizPayload ? _wizPayload.company.replace(/\s+/g, "-") : "STOC";
+  const name   = _wizPayload ? _wizPayload.company.replace(/\s+/g,"-") : "STOC";
   const a = document.createElement("a");
-  a.download = `STOC-QR-${name}.png`;
-  a.href = canvas.toDataURL("image/png");
-  a.click();
+  a.download = `STOC-QR-${name}.png`; a.href = canvas.toDataURL("image/png"); a.click();
   toast("⬇️ تم تحميل QR");
 }
 
@@ -1819,64 +1711,33 @@ function wizPrintQR() {
   const canvas  = document.getElementById("wiz-qr-canvas");
   const company = _wizPayload ? _wizPayload.company : "";
   const code    = _wizPayload ? _wizPayload.code    : "";
-  const img     = canvas.toDataURL("image/png");
-  const w = window.open("", "_blank");
-  w.document.write(`
-    <html dir="rtl"><head>
-    <style>
-      body { font-family: Cairo, sans-serif; text-align: center; padding: 40px; background: #fff; }
-      h2 { font-size: 22px; margin-bottom: 8px; }
-      p  { font-size: 13px; color: #666; margin-bottom: 20px; }
-      img { border: 2px solid #eee; padding: 12px; border-radius: 12px; }
-      small { display: block; margin-top: 16px; font-size: 11px; color: #999; }
-    </style>
+  const w = window.open("","_blank");
+  w.document.write(`<html dir="rtl"><head>
+    <style>body{font-family:Cairo,sans-serif;text-align:center;padding:40px;background:#fff}
+    h2{font-size:22px;margin-bottom:8px}p{font-size:13px;color:#666;margin-bottom:20px}
+    img{border:2px solid #eee;padding:12px;border-radius:12px}
+    small{display:block;margin-top:16px;font-size:11px;color:#999}</style>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800&display=swap" rel="stylesheet"/>
     </head><body>
     <h2>🏢 ${company}</h2>
     <p>كود التفعيل: <strong>${code}</strong></p>
-    <img src="${img}" width="220"/>
+    <img src="${canvas.toDataURL("image/png")}" width="220"/>
     <small>STOC PWA — امسح هذا QR لتفعيل التطبيق</small>
-    </body></html>
-  `);
-  w.document.close();
-  w.print();
+    </body></html>`);
+  w.document.close(); w.print();
 }
 
-// ── نسخ SQL الإعداد ──
-function copySetupSql() {
-  const sql = `CREATE TABLE IF NOT EXISTS stoc_licenses (
-  id         BIGSERIAL PRIMARY KEY,
-  company    TEXT NOT NULL,
-  code       TEXT NOT NULL UNIQUE,
-  sb_url     TEXT,
-  sb_key     TEXT,
-  expires    DATE,
-  devices    INT DEFAULT 5,
-  frozen     BOOLEAN DEFAULT FALSE,
-  note       TEXT,
-  sig        TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-ALTER TABLE stoc_licenses ENABLE ROW LEVEL SECURITY;
-
--- السماح لـ anon بالقراءة (الـ PWA يستخدم anon key للتحقق)
-GRANT SELECT ON stoc_licenses TO anon;
-GRANT SELECT ON stoc_licenses TO authenticated;
-
--- السماح بالكتابة عبر service_role فقط (الأدمين)
-CREATE POLICY "anon_read_only" ON stoc_licenses
-  FOR SELECT TO anon USING (true);
-CREATE POLICY "admin_full_access" ON stoc_licenses
-  FOR ALL TO authenticated USING (true) WITH CHECK (true);`;
-  navigator.clipboard.writeText(sql).then(() => toast("📋 تم نسخ SQL — الصقه في SQL Editor")).catch(() => toast("⚠️ النسخ غير متاح — انسخ يدوياً"));
-}
-
-// ── نسخ SQL الجاهز ──
 function wizCopySql() {
   const sql = document.getElementById("wiz-sql-code").textContent;
-  navigator.clipboard.writeText(sql).then(() => toast("📋 تم نسخ SQL — الصقه في SQL Editor"));
+  navigator.clipboard.writeText(sql).then(() => toast("📋 تم نسخ SQL"));
 }
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+window.addEventListener("DOMContentLoaded", () => {
+  initLockScreen();
+});
 </script>
 </body>
 </html>
