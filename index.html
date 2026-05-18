@@ -638,7 +638,7 @@ input::placeholder{color:var(--muted);}
     <div class="header-ico">📦</div>
     <div>
       <div class="header-title">STOC Manager</div>
-      <div class="header-sub">لوحة تفعيل الشركات · v3.0</div>
+      <div class="header-sub">لوحة تفعيل الشركات · v3.1</div>
     </div>
   </div>
   <div class="header-right">
@@ -1306,16 +1306,22 @@ async function setCustomDate() {
 }
 
 async function updateExpiry(newExpiry) {
+  const c = _cache.find(x => x.code === _drCode);
+  if (!c) return;
   initSB();
+  // إعادة حساب التوقيع بالبيانات الجديدة
+  const newPayload = { company: c.company, url: c.sb_url||"", key: c.sb_key||"",
+    expires: newExpiry||"", devices: c.devices, code: c.code, v:1 };
+  const newSig = await sign(newPayload);
   const { error } = await sb.from("stoc_licenses")
-    .update({ expires: newExpiry })
+    .update({ expires: newExpiry, sig: newSig })
     .eq("code", _drCode);
   if (error) { toast("❌ خطأ: " + error.message); return; }
   const label = newExpiry ? `📅 تم التمديد حتى ${newExpiry}` : "♾️ تم التحويل إلى دائم";
   toast(label);
   await loadCompanies();
   updateStats(_cache);
-  openDrawer(_drCode); // تحديث البيانات في الـ drawer
+  openDrawer(_drCode);
   renderList(document.getElementById("search-input").value);
 }
 
@@ -1326,14 +1332,21 @@ function stepDevices(delta) {
 }
 
 async function saveDevices() {
+  const c = _cache.find(x => x.code === _drCode);
+  if (!c) return;
   const devices = parseInt(document.getElementById("dr-devices").value) || 5;
   initSB();
+  // إعادة حساب التوقيع بالبيانات الجديدة
+  const newPayload = { company: c.company, url: c.sb_url||"", key: c.sb_key||"",
+    expires: c.expires||"", devices: devices, code: c.code, v:1 };
+  const newSig = await sign(newPayload);
   const { error } = await sb.from("stoc_licenses")
-    .update({ devices })
+    .update({ devices, sig: newSig })
     .eq("code", _drCode);
   if (error) { toast("❌ خطأ: " + error.message); return; }
   toast(`✅ تم الحفظ — ${devices} أجهزة`);
   await loadCompanies();
+  openDrawer(_drCode);
   renderList(document.getElementById("search-input").value);
 }
 
