@@ -1009,23 +1009,13 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
 
 <script>
 // ══════════════════════════════════════════════
-//  CONFIG — قابلة للتعديل من env
+//  CONFIG
 // ══════════════════════════════════════════════
-const __CONFIG = (() => {
-  // استخدم localStorage للإعدادات المستمرة (تعديلها عبر واجهة)
-  const saved = (() => { try { return JSON.parse(localStorage.getItem('stoc-admin-cfg')); } catch { return null; } })();
-  return {
-    SECRET:   saved?.secret   || "Mounir2026",
-    SB_URL:   saved?.sb_url   || "https://pcjbkickwdpouphkygeq.supabase.co",
-    SB_KEY:   saved?.sb_key   || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjamJraWNrd2Rwb3VwaGt5Z2VxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTAxNjI1NiwiZXhwIjoyMDk0NTkyMjU2fQ.cnvbQe4zm6G5pKJ9tFO388FQ_BBoXEulGgxdFq5ra3E",
-    PWA_BASE: saved?.pwa_base || "https://ayad-mounir.github.io/STOC-PWA/",
-  };
-})();
-const SECRET   = __CONFIG.SECRET;
-const SB_URL   = __CONFIG.SB_URL;
-const SB_KEY   = __CONFIG.SB_KEY;
-const PWA_BASE = __CONFIG.PWA_BASE;
+const SECRET   = "Mounir2026";
+const SB_URL   = "https://pcjbkickwdpouphkygeq.supabase.co";
+const SB_KEY   = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjamJraWNrd2Rwb3VwaGt5Z2VxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTAxNjI1NiwiZXhwIjoyMDk0NTkyMjU2fQ.cnvbQe4zm6G5pKJ9tFO388FQ_BBoXEulGgxdFq5ra3E";
 const LOCK_KEY = "stoc-admin-lock-v1";
+const PWA_BASE = "https://ayad-mounir.github.io/STOC-PWA/";
 
 // ══════════════════════════════════════════════
 //  INSTALL
@@ -1119,15 +1109,9 @@ function setSBStatus(ok, msg) {
 }
 
 async function sign(payload) {
-  const data = JSON.stringify(payload);
-  const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw", enc.encode(SECRET),
-    { name: "HMAC", hash: "SHA-256" },
-    false, ["sign"]
-  );
-  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(data));
-  return btoa(String.fromCharCode(...new Uint8Array(sig)));
+  const msg = JSON.stringify(payload) + SECRET;
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("").slice(0,32);
 }
 
 function genCode(company) {
