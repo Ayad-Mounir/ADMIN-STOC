@@ -2,6 +2,7 @@
   "name": "STOC Manager",
   "short_name": "STOC Admin",
   "description": "لوحة إدارة تراخيص STOC",
+  "version": "3.0.0",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
