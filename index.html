@@ -76,7 +76,7 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 }
 .lock-btn:hover{filter:brightness(1.1);}
 .lock-err{font-size:12px;color:var(--red);min-height:20px;margin-top:8px;text-align:center;}
-.lock-first{font-size:11px;color:#475569;margin-top:14px;text-align:center;line-height:1.7;}
+
 
 /* ═══════════════════════════════
    HEADER
@@ -702,6 +702,142 @@ input::placeholder{color:var(--muted);}
   transition:all .2s;
 }
 #settings-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* ═══════════════════════════════
+   SETUP GUIDE OVERLAY
+═══════════════════════════════ */
+#guide-overlay{
+  display:none;position:fixed;inset:0;z-index:900;
+  background:var(--bg);overflow-y:auto;
+}
+#guide-overlay.open{display:block;}
+.guide-topbar{
+  position:sticky;top:0;z-index:10;
+  background:var(--bg);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;gap:12px;
+}
+.guide-topbar-left{flex:1;}
+.guide-topbar-title{font-size:15px;font-weight:800;color:var(--gold);}
+.guide-topbar-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.guide-close{
+  width:36px;height:36px;border-radius:10px;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.guide-close:hover{border-color:var(--red);color:var(--red);}
+.guide-body{padding:16px 16px 80px;}
+.step-card{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:16px;margin-bottom:10px;overflow:hidden;
+  transition:border-color .25s;
+}
+.step-card.done{border-color:#10b98135;}
+.step-card.active{border-color:var(--gold);}
+.step-head{
+  display:flex;align-items:center;gap:14px;
+  padding:15px 18px;cursor:pointer;user-select:none;
+}
+.step-num{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:var(--bg);border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:900;color:var(--muted);transition:all .2s;
+}
+.step-card.done  .step-num{background:#10b98120;border-color:var(--green);color:var(--green);}
+.step-card.active .step-num{background:linear-gradient(135deg,var(--dim),var(--gold));border-color:var(--gold);color:#000;}
+.step-head-text{flex:1;}
+.step-title{font-size:13px;font-weight:800;color:var(--text);}
+.step-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+.step-badge{
+  font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;
+  background:var(--border);color:var(--muted);flex-shrink:0;
+}
+.step-card.done  .step-badge{background:#10b98115;color:var(--green);}
+.step-card.active .step-badge{background:#f59e0b15;color:var(--gold);}
+.step-body{
+  display:none;padding:0 18px 18px;
+  border-top:1px solid var(--border);
+}
+.step-card.active .step-body{display:block;}
+.step-desc{font-size:12px;color:var(--muted);line-height:2;padding:13px 0 8px;}
+.step-desc strong{color:var(--text);font-weight:800;}
+.step-desc code{
+  background:var(--bg);border:1px solid var(--border);border-radius:5px;
+  padding:1px 6px;font-size:11px;color:var(--gold);font-family:monospace;
+}
+.code-block{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;margin:10px 0;
+}
+.code-block-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;border-bottom:1px solid var(--border);
+}
+.code-lbl{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;}
+.copy-btn{
+  font-size:10px;font-weight:800;color:var(--gold);
+  background:transparent;border:1px solid var(--border);
+  border-radius:7px;padding:4px 10px;cursor:pointer;
+  transition:all .2s;font-family:'Cairo',sans-serif;
+}
+.copy-btn:hover{border-color:var(--gold);background:#f59e0b10;}
+.copy-btn.copied{color:var(--green);border-color:var(--green);}
+.code-pre{
+  font-family:'Courier New',monospace;font-size:10px;
+  color:#8fa3bf;line-height:1.75;padding:14px;margin:0;
+  white-space:pre;overflow-x:auto;max-height:230px;overflow-y:auto;
+}
+.secret-table{margin:10px 0;display:flex;flex-direction:column;gap:8px;}
+.secret-row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;background:var(--bg);
+  border:1px solid var(--border);border-radius:10px;flex-wrap:wrap;
+}
+.secret-key{font-family:monospace;font-size:12px;font-weight:700;color:var(--gold);min-width:120px;}
+.secret-val{font-family:monospace;font-size:11px;color:var(--muted);flex:1;word-break:break-all;}
+.secret-copy{
+  font-size:10px;font-weight:800;color:var(--muted);
+  background:transparent;border:1px solid var(--border);
+  border-radius:7px;padding:4px 10px;cursor:pointer;
+  transition:all .2s;font-family:'Cairo',sans-serif;flex-shrink:0;
+}
+.secret-copy:hover{border-color:var(--gold);color:var(--gold);}
+.secret-copy.copied{color:var(--green);border-color:var(--green);}
+.step-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.step-link{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 16px;border-radius:10px;font-size:12px;font-weight:700;
+  text-decoration:none;border:1px solid var(--border);
+  color:var(--muted);background:transparent;
+  transition:all .2s;font-family:'Cairo',sans-serif;cursor:pointer;
+}
+.step-link:hover{border-color:var(--gold);color:var(--gold);}
+.step-done-btn{
+  padding:9px 16px;border-radius:10px;font-size:12px;font-weight:700;
+  background:linear-gradient(135deg,var(--dim),var(--gold));
+  color:#000;border:none;cursor:pointer;font-family:'Cairo',sans-serif;
+  display:inline-flex;align-items:center;gap:6px;transition:filter .2s;
+}
+.step-done-btn:hover{filter:brightness(1.1);}
+.step-warn{
+  background:#f59e0b08;border:1px solid #f59e0b30;border-radius:10px;
+  padding:10px 14px;font-size:11px;color:#c8a060;line-height:1.9;margin:10px 0;
+}
+.step-warn strong{color:var(--gold);}
+.step-info{
+  background:#3b82f608;border:1px solid #3b82f635;border-radius:10px;
+  padding:10px 14px;font-size:11px;color:#7aacf0;line-height:1.9;margin:10px 0;
+}
+#open-guide-btn{
+  width:100%;display:flex;align-items:center;justify-content:center;
+  gap:8px;padding:12px;border-radius:12px;
+  background:linear-gradient(135deg,#1a2f4a,#1e3f6a);
+  border:1px solid #3b82f640;color:#7aacf0;
+  font-size:13px;font-weight:800;cursor:pointer;
+  font-family:'Cairo',sans-serif;transition:all .2s;
+}
+#open-guide-btn:hover{border-color:#3b82f6;color:#93bbf8;}
 </style>
 </head>
 <body>
@@ -710,14 +846,30 @@ input::placeholder{color:var(--muted);}
 <div id="lock-screen">
   <div class="lock-ico">🔐</div>
   <div class="lock-title">STOC Manager</div>
-  <div class="lock-sub" id="lock-sub">أدخل كلمة السر للدخول</div>
-  <input type="password" id="lock-input" placeholder="••••••••"
-    onkeydown="if(event.key==='Enter')unlockApp()"/>
-  <div class="lock-err" id="lock-err"></div>
-  <button class="lock-btn" onclick="unlockApp()">🔓 دخول</button>
-  <div class="lock-first" id="lock-first" style="display:none">
-    أول مرة — اختر كلمة سر للتطبيق<br/>
-    <span style="color:var(--gold)">ستُحفظ على هذا الجهاز فقط</span>
+  <div class="lock-sub" id="lock-sub">تسجيل دخول المدير</div>
+
+  <!-- حالة: جارٍ التحقق -->
+  <div id="lock-checking" style="display:block;">
+    <div style="font-size:12px;color:var(--muted);text-align:center;">⏳ جارٍ التحقق…</div>
+  </div>
+
+  <!-- حالة: إعداد مطلوب -->
+  <div id="lock-setup-msg" style="display:none;text-align:center;">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.9;">
+      لم يتم إعداد Supabase بعد.<br/>افتح الإعدادات وأدخل Project URL والـ Anon Key.
+    </div>
+    <button class="lock-btn" onclick="settingsOpen()">⚙️ فتح الإعدادات</button>
+  </div>
+
+  <!-- حالة: نموذج الدخول -->
+  <div id="lock-form" style="display:none;width:100%;">
+    <input type="email" id="lock-email" placeholder="admin@example.com"
+      onkeydown="if(event.key==='Enter')document.getElementById('lock-input').focus()"
+      style="margin-bottom:10px;"/>
+    <input type="password" id="lock-input" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter')unlockApp()"/>
+    <div class="lock-err" id="lock-err"></div>
+    <button class="lock-btn" onclick="unlockApp()">🔓 دخول</button>
   </div>
 </div>
 
@@ -735,6 +887,14 @@ input::placeholder{color:var(--muted);}
   <div class="header-right">
     <div id="sb-status">⏳ جارٍ الاتصال…</div>
     <button id="settings-btn" onclick="settingsOpen()" title="الإعدادات">⚙️</button>
+    <button onclick="signOutAdmin()" title="خروج"
+      style="width:34px;height:34px;border-radius:9px;border:1px solid var(--border);
+             background:transparent;color:var(--muted);font-size:15px;cursor:pointer;
+             display:flex;align-items:center;justify-content:center;transition:all .2s;"
+      onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+      🚪
+    </button>
     <div class="badge-admin">🔐 المدير</div>
   </div>
 </div>
@@ -1095,8 +1255,251 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
   </div>
 </div>
 
-<!-- ══ SETTINGS DRAWER ══ -->
-<div id="settings-overlay" onclick="settingsClose()"></div>
+<!-- ══ SETUP GUIDE ══ -->
+<div id="guide-overlay">
+
+  <!-- شريط العنوان -->
+  <div class="guide-topbar">
+    <div class="guide-topbar-left">
+      <div class="guide-topbar-title">📖 دليل إعداد Supabase</div>
+      <div class="guide-topbar-sub">6 خطوات — من الصفر حتى الاتصال الكامل</div>
+    </div>
+    <button class="guide-close" onclick="guideClose()">✕</button>
+  </div>
+
+  <div class="guide-body">
+
+    <!-- ══ الخطوة 1 ══ -->
+    <div class="step-card active" id="step-1">
+      <div class="step-head" onclick="guideToggle(1)">
+        <div class="step-num">1</div>
+        <div class="step-head-text">
+          <div class="step-title">إنشاء مشروع Supabase</div>
+          <div class="step-sub">مجاني — لا يحتاج بطاقة بنكية</div>
+        </div>
+        <div class="step-badge">البداية</div>
+      </div>
+      <div class="step-body">
+        <div class="step-desc">
+          اذهب إلى لوحة Supabase وأنشئ مشروعاً جديداً:<br>
+          ① اضغط <strong>New Project</strong><br>
+          ② اختر اسماً مثل <code>stoc-prod</code><br>
+          ③ اختر <strong>Region</strong> قريبة منك (مثلاً Frankfurt أو Singapore)<br>
+          ④ اختر كلمة مرور قوية للـ Database واحفظها في مكان آمن<br>
+          ⑤ انتظر دقيقة حتى يكتمل الإعداد
+        </div>
+        <div class="step-info">💡 الخطة المجانية تكفي لـ STOC — 500MB تخزين، 2GB نقل بيانات شهرياً.</div>
+        <div class="step-actions">
+          <a class="step-link" href="https://supabase.com/dashboard/new" target="_blank">🔗 إنشاء مشروع جديد</a>
+          <button class="step-done-btn" onclick="guideDone(1)">✅ تم — الخطوة التالية</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ الخطوة 2 ══ -->
+    <div class="step-card" id="step-2">
+      <div class="step-head" onclick="guideToggle(2)">
+        <div class="step-num">2</div>
+        <div class="step-head-text">
+          <div class="step-title">نسخ الـ Project URL</div>
+          <div class="step-sub">ستدخله في حقل الإعدادات</div>
+        </div>
+        <div class="step-badge">مطلوب</div>
+      </div>
+      <div class="step-body">
+        <div class="step-desc">
+          من لوحة مشروعك في Supabase:<br>
+          ① اضغط <strong>Project Settings</strong> (أسفل القائمة الجانبية)<br>
+          ② اختر تبويب <strong>API</strong><br>
+          ③ انسخ <strong>Project URL</strong> واحفظه<br>
+          ④ انسخ <strong>anon public</strong> key واحفظه — ستحتاجهما معاً في الإعدادات
+        </div>
+        <div class="code-block">
+          <div class="code-block-hdr">
+            <span class="code-lbl">مثال على Project URL</span>
+            <button class="copy-btn" onclick="copyText('https://abcdefghijklm.supabase.co', this)">📋 نسخ مثال</button>
+          </div>
+          <pre class="code-pre">https://abcdefghijklm.supabase.co</pre>
+        </div>
+        <div class="step-warn">
+          ⚠️ <strong>لا تنسخ الـ API Keys</strong> — STOC لا يحتاجها. كل العمليات تمر عبر Edge Functions فقط.
+        </div>
+        <div class="step-actions">
+          <a class="step-link" href="https://supabase.com/dashboard" target="_blank">🔗 فتح لوحة المشروع</a>
+          <button class="step-done-btn" onclick="guideDone(2)">✅ نسخت الـ URL</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ الخطوة 3 ══ -->
+    <div class="step-card" id="step-3">
+      <div class="step-head" onclick="guideToggle(3)">
+        <div class="step-num">3</div>
+        <div class="step-head-text">
+          <div class="step-title">إنشاء جدول stoc_licenses</div>
+          <div class="step-sub">شغّل هذا الـ SQL في مشروعك</div>
+        </div>
+        <div class="step-badge">SQL</div>
+      </div>
+      <div class="step-body">
+        <div class="step-desc">
+          ① في لوحة Supabase اضغط <strong>SQL Editor</strong> من القائمة الجانبية<br>
+          ② اضغط <strong>New query</strong><br>
+          ③ الصق الكود التالي كاملاً ثم اضغط <strong>Run</strong>
+        </div>
+        <div class="code-block">
+          <div class="code-block-hdr">
+            <span class="code-lbl">SQL — إنشاء الجدول والصلاحيات</span>
+            <button class="copy-btn" id="copy-sql-btn" onclick="guidecopySql()">📋 نسخ</button>
+          </div>
+          <pre class="code-pre" id="guide-sql-pre"></pre>
+        </div>
+        <div class="step-info">💡 SQL آمن — يستخدم <code>CREATE TABLE IF NOT EXISTS</code> أي لن يحذف بيانات موجودة إذا شغّلته مرة ثانية.</div>
+        <div class="step-actions">
+          <a class="step-link" href="https://supabase.com/dashboard" target="_blank">🔗 فتح SQL Editor</a>
+          <button class="step-done-btn" onclick="guideDone(3)">✅ شغّلت الـ SQL</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ الخطوة 4 ══ -->
+    <div class="step-card" id="step-4">
+      <div class="step-head" onclick="guideToggle(4)">
+        <div class="step-num">4</div>
+        <div class="step-head-text">
+          <div class="step-title">إنشاء Edge Function — sign-license</div>
+          <div class="step-sub">تحمي المفتاح السري داخل السيرفر</div>
+        </div>
+        <div class="step-badge">Function</div>
+      </div>
+      <div class="step-body">
+        <div class="step-desc">
+          ① في لوحة Supabase اضغط <strong>Edge Functions</strong><br>
+          ② اضغط <strong>Create a new function</strong><br>
+          ③ اكتب الاسم: <code>sign-license</code> ثم اضغط Create<br>
+          ④ احذف الكود الموجود والصق الكود أدناه بالكامل<br>
+          ⑤ اضغط <strong>Deploy</strong>
+        </div>
+        <div class="code-block">
+          <div class="code-block-hdr">
+            <span class="code-lbl">sign-license / index.ts</span>
+            <button class="copy-btn" id="copy-fn-btn" onclick="guidecopyFn()">📋 نسخ الكود</button>
+          </div>
+          <pre class="code-pre" id="guide-fn-pre"></pre>
+        </div>
+        <div class="step-warn">
+          ⚠️ <strong>لا تضغط Deploy</strong> قبل الخطوة 5 — الـ Function تحتاج Secrets لتعمل.
+        </div>
+        <div class="step-actions">
+          <a class="step-link" href="https://supabase.com/dashboard" target="_blank">🔗 فتح Edge Functions</a>
+          <button class="step-done-btn" onclick="guideDone(4)">✅ أنشأت ونشرت الـ Function</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ الخطوة 5 ══ -->
+    <div class="step-card" id="step-5">
+      <div class="step-head" onclick="guideToggle(5)">
+        <div class="step-num">5</div>
+        <div class="step-head-text">
+          <div class="step-title">إضافة Secrets — المفاتيح السرية</div>
+          <div class="step-sub">مخزّنة في Supabase — لا تظهر في الكود</div>
+        </div>
+        <div class="step-badge">Secrets</div>
+      </div>
+      <div class="step-body">
+        <div class="step-desc">
+          ① في لوحة Supabase اضغط <strong>Edge Functions</strong><br>
+          ② اضغط <strong>Manage Secrets</strong> (أو من القائمة الجانبية → Settings → Vault)<br>
+          ③ أضف هذين السرّين بالضبط:
+        </div>
+        <div class="secret-table">
+          <div class="secret-row">
+            <span class="secret-key">LICENSE_SECRET</span>
+            <span class="secret-val" id="sec-val-1">Mounir2026</span>
+            <button class="secret-copy" onclick="copyText('Mounir2026', this)">📋 نسخ</button>
+          </div>
+          <div class="secret-row">
+            <span class="secret-key">ADMIN_TOKEN</span>
+            <span class="secret-val" id="sec-val-2">STOC-ADMIN-CHANGE-ME-2026</span>
+            <button class="secret-copy" onclick="copyText('STOC-ADMIN-CHANGE-ME-2026', this)">📋 نسخ</button>
+          </div>
+        </div>
+        <div class="step-warn">
+          ⚠️ <strong>غيّر القيمتين</strong> إلى كلمات سر قوية من اختيارك — هذه مجرد قيم افتراضية.<br>
+          <strong>ADMIN_TOKEN</strong> يجب أن يطابق تماماً ما ستدخله في الإعدادات (الخطوة 6).
+        </div>
+        <div class="step-actions">
+          <a class="step-link" href="https://supabase.com/dashboard" target="_blank">🔗 فتح Manage Secrets</a>
+          <button class="step-done-btn" onclick="guideDone(5)">✅ أضفت الـ Secrets</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ الخطوة 5.5: إنشاء حساب Admin في Supabase Auth ══ -->
+    <div class="step-card" id="step-55">
+      <div class="step-head" onclick="guideToggle('55')">
+        <div class="step-num">5<span style="font-size:9px;">b</span></div>
+        <div class="step-head-text">
+          <div class="step-title">إنشاء حساب المدير في Supabase Auth</div>
+          <div class="step-sub">الإيميل وكلمة السر اللي ستدخل بها للتطبيق</div>
+        </div>
+        <div class="step-badge">Auth</div>
+      </div>
+      <div class="step-body">
+        <div class="step-desc">
+          ① في لوحة Supabase اضغط <strong>Authentication</strong> من القائمة الجانبية<br>
+          ② اضغط تبويب <strong>Users</strong><br>
+          ③ اضغط <strong>Add user → Create new user</strong><br>
+          ④ أدخل إيميل المدير وكلمة سر قوية<br>
+          ⑤ اضغط <strong>Create user</strong>
+        </div>
+        <div class="step-warn">
+          ⚠️ <strong>احفظ الإيميل وكلمة السر</strong> — ستدخلهما في شاشة الدخول لـ STOC Manager.<br>
+          يمكنك تغيير كلمة السر لاحقاً من لوحة Authentication → Users.
+        </div>
+        <div class="step-info">
+          💡 يمكنك إنشاء أكثر من حساب مدير — كل واحد سيملك نفس الصلاحيات.
+        </div>
+        <div class="step-actions">
+          <a class="step-link" href="https://supabase.com/dashboard" target="_blank">🔗 فتح Authentication</a>
+          <button class="step-done-btn" onclick="guideDone('55')">✅ أنشأت الحساب</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ الخطوة 6 ══ -->
+    <div class="step-card" id="step-6">
+      <div class="step-head" onclick="guideToggle(6)">
+        <div class="step-num">6</div>
+        <div class="step-head-text">
+          <div class="step-title">إدخال الإعدادات واختبار الاتصال</div>
+          <div class="step-sub">الخطوة الأخيرة</div>
+        </div>
+        <div class="step-badge">اكتمال</div>
+      </div>
+      <div class="step-body">
+        <div class="step-desc">
+          ① اضغط <strong>✕</strong> لإغلاق هذا الدليل<br>
+          ② في نافذة الإعدادات أدخل <strong>Project URL</strong> الذي نسخته في الخطوة 2<br>
+          ③ أدخل <strong>Admin Token</strong> — نفس قيمة <code>ADMIN_TOKEN</code> التي أضفتها في Secrets<br>
+          ④ اضغط <strong>🔌 اختبار الاتصال</strong> — يجب أن تظهر رسالة "🟢 الاتصال ناجح"<br>
+          ⑤ اضغط <strong>💾 حفظ وتطبيق</strong>
+        </div>
+        <div class="step-info">
+          💡 عند النجاح ستُعاد لوحة الشركات تلقائياً. إذا ظهر جدول stoc_licenses سيختفي البانر الأحمر أعلى الصفحة.
+        </div>
+        <div class="step-actions">
+          <button class="step-link" onclick="guideClose()">← الرجوع للإعدادات</button>
+          <button class="step-done-btn" onclick="guideFinish()">🎉 إعداد مكتمل!</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /guide-body -->
+</div><!-- /guide-overlay -->
+
+<canvas id="qr-canvas" style="display:none;"></canvas>
 <div id="settings-drawer">
   <div class="drawer-handle"></div>
 
@@ -1120,6 +1523,14 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
         placeholder="https://xxxx.supabase.co"
         oninput="cfgResetStatus()"/>
       <span class="cfg-hint">من لوحة Supabase → Project Settings → API → Project URL</span>
+    </div>
+
+    <div class="cfg-field">
+      <label>Anon Public Key</label>
+      <input type="text" id="cfg-anon-key"
+        placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…"
+        oninput="cfgResetStatus()"/>
+      <span class="cfg-hint">من Project Settings → API → <strong>anon public</strong> (آمن للمتصفح)</span>
     </div>
 
     <div class="cfg-field">
@@ -1160,23 +1571,15 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
       onclick="cfgRunChecks()">🔄 فحص الآن</button>
   </div>
 
-  <!-- ── القسم 3: معلومات الإعداد الأولي ── -->
+  <!-- ── القسم 3: دليل الإعداد الأولي ── -->
   <div class="cfg-section">
-    <div class="cfg-section-title">📋 خطوات الإعداد الأولي</div>
-    <div style="font-size:12px;color:var(--muted);line-height:2;">
-      <div>1️⃣ &nbsp;أنشئ مشروع Supabase جديد</div>
-      <div>2️⃣ &nbsp;شغّل SQL الجدول من البانر أعلاه</div>
-      <div>3️⃣ &nbsp;أنشئ Edge Function <code style="color:var(--gold);font-size:11px;">sign-license</code></div>
-      <div>4️⃣ &nbsp;أضف Secrets: <code style="color:var(--gold);font-size:11px;">LICENSE_SECRET</code> و <code style="color:var(--gold);font-size:11px;">ADMIN_TOKEN</code></div>
-      <div>5️⃣ &nbsp;أدخل الـ URL والـ Token هنا واضغط "حفظ وتطبيق"</div>
+    <div class="cfg-section-title">📋 دليل الإعداد خطوة بخطوة</div>
+    <div style="font-size:12px;color:var(--muted);line-height:2;margin-bottom:12px;">
+      مشروع Supabase جديد؟ الدليل يشرح كل خطوة بروابط مباشرة وأكواد SQL جاهزة للنسخ.
     </div>
-    <div style="margin-top:14px;">
-      <a href="https://supabase.com/dashboard" target="_blank"
-         class="cfg-btn cfg-btn-outline"
-         style="text-decoration:none;display:flex;width:100%;box-sizing:border-box;">
-        🔗 فتح لوحة Supabase
-      </a>
-    </div>
+    <button id="open-guide-btn" onclick="guideOpen()">
+      📖 فتح دليل الإعداد الكامل
+    </button>
   </div>
 </div>
 
@@ -1189,12 +1592,11 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
 //  CONFIG — يُقرأ من localStorage أولاً
 // ══════════════════════════════════════════════
 const CFG_KEY     = "stoc-admin-cfg-v1";
-const LOCK_KEY    = "stoc-admin-lock-v1";
 const PWA_BASE    = "https://ayad-mounir.github.io/STOC-PWA/";
 
-// القيم الافتراضية (تُستبدل عند الحفظ)
 const _DEFAULTS = {
   sb_url:      "https://pcjbkickwdpouphkygeq.supabase.co",
+  anon_key:    "",   // Supabase → Project Settings → API → anon public
   admin_token: "STOC-ADMIN-CHANGE-ME-2026",
 };
 
@@ -1206,11 +1608,21 @@ function saveCfg(obj) {
   localStorage.setItem(CFG_KEY, JSON.stringify(obj));
 }
 
-let _cfg       = loadCfg();
-let SB_URL     = _cfg.sb_url;
-let SIGN_URL   = SB_URL + "/functions/v1/sign-license";
-let PROXY_URL  = SB_URL + "/functions/v1/admin-proxy";
+let _cfg        = loadCfg();
+let SB_URL      = _cfg.sb_url;
+let SIGN_URL    = SB_URL + "/functions/v1/sign-license";
+let PROXY_URL   = SB_URL + "/functions/v1/admin-proxy";
 let ADMIN_TOKEN = _cfg.admin_token;
+
+// ── Supabase Auth client (يحتاج anon_key) ──
+let _sb = null;
+function initSBClient() {
+  const cfg = loadCfg();
+  if (!cfg.sb_url || !cfg.anon_key) return null;
+  return supabase.createClient(cfg.sb_url, cfg.anon_key, {
+    auth: { persistSession: true, autoRefreshToken: true }
+  });
+}
 
 function applyCfg(cfg) {
   _cfg        = cfg;
@@ -1218,6 +1630,7 @@ function applyCfg(cfg) {
   SIGN_URL    = SB_URL + "/functions/v1/sign-license";
   PROXY_URL   = SB_URL + "/functions/v1/admin-proxy";
   ADMIN_TOKEN = cfg.admin_token;
+  _sb         = initSBClient();   // أعد تهيئة الـ client بالبيانات الجديدة
 }
 
 // ══════════════════════════════════════════════
@@ -1241,46 +1654,77 @@ async function installApp() {
 }
 
 // ══════════════════════════════════════════════
-//  LOCK SCREEN
+//  AUTH — Supabase Auth (بدلاً من localStorage)
 // ══════════════════════════════════════════════
-async function hashPass(pass) {
-  const buf = await crypto.subtle.digest("SHA-256",
-    new TextEncoder().encode(pass + "STOC-ADMIN-SALT"));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+
+function _lockState(state) {
+  // state: 'checking' | 'no-config' | 'login' | 'error'
+  document.getElementById("lock-checking").style.display = state === "checking" ? "block" : "none";
+  document.getElementById("lock-setup-msg").style.display = state === "no-config" ? "block" : "none";
+  document.getElementById("lock-form").style.display      = (state === "login" || state === "error") ? "block" : "none";
 }
 
-async function initLockScreen() {
-  const stored = localStorage.getItem(LOCK_KEY);
-  if (!stored) {
-    document.getElementById("lock-sub").textContent = "اختر كلمة سر للتطبيق";
-    document.getElementById("lock-first").style.display = "block";
+async function initAuth() {
+  _sb = initSBClient();
+
+  // لا يوجد إعداد — عرض رسالة الإعداد المطلوب
+  if (!_sb) {
+    document.getElementById("lock-sub").textContent = "يجب إعداد Supabase أولاً";
+    _lockState("no-config");
+    return;
   }
-  document.getElementById("lock-input").focus();
+
+  _lockState("checking");
+  document.getElementById("lock-sub").textContent = "جارٍ التحقق من الجلسة…";
+
+  try {
+    const { data: { session } } = await _sb.auth.getSession();
+    if (session) { openApp(); return; }
+  } catch (e) { /* session check failed — show login */ }
+
+  document.getElementById("lock-sub").textContent = "تسجيل دخول المدير";
+  _lockState("login");
+  document.getElementById("lock-email").focus();
 }
 
 async function unlockApp() {
+  if (!_sb) { settingsOpen(); return; }
+
+  const email = document.getElementById("lock-email").value.trim();
   const pass  = document.getElementById("lock-input").value;
-  const input = document.getElementById("lock-input");
   const errEl = document.getElementById("lock-err");
-  if (!pass || pass.length < 4) {
-    errEl.textContent = "⚠️ كلمة السر قصيرة جداً (4 أحرف على الأقل)";
-    input.classList.add("err");
-    setTimeout(() => input.classList.remove("err"), 500); return;
+  const btn   = document.querySelector(".lock-btn");
+
+  errEl.textContent = "";
+  if (!email || !pass) {
+    errEl.textContent = "⚠️ أدخل الإيميل وكلمة السر";
+    return;
   }
-  const hash   = await hashPass(pass);
-  const stored = localStorage.getItem(LOCK_KEY);
-  if (!stored) {
-    localStorage.setItem(LOCK_KEY, hash);
-    errEl.textContent = "";
-    openApp();
-  } else if (hash === stored) {
-    errEl.textContent = ""; openApp();
-  } else {
-    errEl.textContent = "❌ كلمة السر غير صحيحة";
-    input.value = "";
-    input.classList.add("err");
-    setTimeout(() => input.classList.remove("err"), 500);
+
+  btn.textContent = "⏳ جارٍ الدخول…";
+  btn.disabled    = true;
+
+  const { error } = await _sb.auth.signInWithPassword({ email, password: pass });
+
+  btn.textContent = "🔓 دخول";
+  btn.disabled    = false;
+
+  if (error) {
+    errEl.textContent = error.message.includes("Invalid") || error.message.includes("credentials")
+      ? "❌ الإيميل أو كلمة السر غير صحيحة"
+      : "❌ " + error.message;
+    document.getElementById("lock-input").value = "";
+    document.getElementById("lock-input").classList.add("err");
+    setTimeout(() => document.getElementById("lock-input").classList.remove("err"), 500);
+    return;
   }
+  openApp();
+}
+
+async function signOutAdmin() {
+  if (_sb) await _sb.auth.signOut();
+  // إعادة تحميل الصفحة لمسح كل الحالة
+  window.location.reload();
 }
 
 function openApp() {
@@ -1290,7 +1734,7 @@ function openApp() {
   setTimeout(() => { ls.style.display = "none"; checkAdminDB(); renderList(); }, 320);
 }
 
-window.addEventListener("DOMContentLoaded", () => initLockScreen());
+window.addEventListener("DOMContentLoaded", () => initAuth());
 
 // ══════════════════════════════════════════════
 //  ADMIN PROXY — بوابة آمنة بدلاً من Supabase مباشرة
@@ -1993,9 +2437,180 @@ function wizCopySql() {
 // ══════════════════════════════════════════════
 //  SETTINGS DRAWER
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+//  SETUP GUIDE
+// ══════════════════════════════════════════════
+const GUIDE_PROGRESS_KEY = "stoc-guide-progress-v1";
+
+const GUIDE_SQL = `CREATE TABLE IF NOT EXISTS stoc_licenses (
+  id         BIGSERIAL PRIMARY KEY,
+  company    TEXT NOT NULL,
+  code       TEXT NOT NULL UNIQUE,
+  sb_url     TEXT,
+  sb_key     TEXT,
+  expires    DATE,
+  devices    INT DEFAULT 5,
+  frozen     BOOLEAN DEFAULT FALSE,
+  note       TEXT,
+  sig        TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE stoc_licenses ENABLE ROW LEVEL SECURITY;
+
+GRANT SELECT ON stoc_licenses TO anon;
+GRANT SELECT ON stoc_licenses TO authenticated;
+
+CREATE POLICY "anon_read_only" ON stoc_licenses
+  FOR SELECT TO anon USING (true);
+CREATE POLICY "admin_full_access" ON stoc_licenses
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);`;
+
+const GUIDE_FN = `import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const CORS = {
+  "Access-Control-Allow-Origin":  "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, X-Admin-Token",
+};
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...CORS, "Content-Type": "application/json" },
+  });
+}
+
+async function computeSig(payload) {
+  const secret = Deno.env.get("LICENSE_SECRET") ?? "";
+  const msg    = JSON.stringify(payload) + secret;
+  const buf    = await crypto.subtle.digest("SHA-256",
+    new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("").slice(0, 32);
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
+  if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
+
+  let body;
+  try { body = await req.json(); }
+  catch { return json({ error: "invalid JSON" }, 400); }
+
+  const action = body.action;
+
+  if (action === "sign") {
+    const adminToken = Deno.env.get("ADMIN_TOKEN") ?? "";
+    const sentToken  = req.headers.get("X-Admin-Token") ?? "";
+    if (!adminToken || sentToken !== adminToken)
+      return json({ error: "unauthorized" }, 401);
+    const sig = await computeSig(body.payload);
+    return json({ sig });
+  }
+
+  if (action === "verify") {
+    const { sig, ...data } = body.payload ?? {};
+    const computed = await computeSig(data);
+    return json({ valid: computed === (body.sig ?? sig) });
+  }
+
+  return json({ error: "action unknown" }, 400);
+});`;
+
+let _guideProgress = [];
+try { _guideProgress = JSON.parse(localStorage.getItem(GUIDE_PROGRESS_KEY)) || []; } catch {}
+
+const GUIDE_STEPS = [1, 2, 3, 4, 5, '55', 6];
+
+function guideOpen() {
+  settingsClose();
+  document.getElementById("guide-sql-pre").textContent = GUIDE_SQL;
+  document.getElementById("guide-fn-pre").textContent  = GUIDE_FN;
+  _guideProgress.forEach(n => {
+    const card = document.getElementById("step-" + n);
+    if (card) { card.classList.add("done"); card.classList.remove("active"); }
+  });
+  const nextStep = GUIDE_STEPS.find(n => !_guideProgress.includes(n)) || 6;
+  _activateStep(nextStep);
+  document.getElementById("guide-overlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function guideClose() {
+  document.getElementById("guide-overlay").classList.remove("open");
+  document.body.style.overflow = "";
+  settingsOpen();
+}
+
+function guideToggle(n) {
+  const card = document.getElementById("step-" + n);
+  if (card && card.classList.contains("active")) return;
+  _activateStep(n);
+}
+
+function _activateStep(n) {
+  GUIDE_STEPS.forEach(i => {
+    const c = document.getElementById("step-" + i);
+    if (c) c.classList.remove("active");
+  });
+  const target = document.getElementById("step-" + n);
+  if (target) {
+    target.classList.add("active");
+    setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
+  }
+}
+
+function guideDone(n) {
+  const card = document.getElementById("step-" + n);
+  if (!card) return;
+  card.classList.remove("active");
+  card.classList.add("done");
+  const badge = card.querySelector(".step-badge");
+  if (badge) badge.textContent = "✅ تم";
+  if (!_guideProgress.includes(n)) {
+    _guideProgress.push(n);
+    localStorage.setItem(GUIDE_PROGRESS_KEY, JSON.stringify(_guideProgress));
+  }
+  const next = GUIDE_STEPS.find(i => String(i) > String(n) && !_guideProgress.includes(i));
+  if (next) _activateStep(next);
+  else _activateStep(6);
+}
+
+function guideFinish() {
+  _guideProgress = [...GUIDE_STEPS];
+  localStorage.setItem(GUIDE_PROGRESS_KEY, JSON.stringify(_guideProgress));
+  GUIDE_STEPS.forEach(n => {
+    const c = document.getElementById("step-" + n);
+    if (c) { c.classList.add("done"); c.classList.remove("active"); }
+  });
+  document.getElementById("guide-overlay").classList.remove("open");
+  document.body.style.overflow = "";
+  toast("🎉 إعداد Supabase مكتمل — جارٍ الاتصال…");
+  settingsOpen();
+}
+
+function guidecopySql() {
+  copyText(GUIDE_SQL, document.getElementById("copy-sql-btn"));
+}
+function guidecopyFn() {
+  copyText(GUIDE_FN, document.getElementById("copy-fn-btn"));
+}
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = "✅ تم النسخ";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove("copied"); }, 2000);
+  }).catch(() => toast("تعذّر النسخ — جرّب يدوياً"));
+}
+
 function settingsOpen() {
   const cfg = loadCfg();
   document.getElementById("cfg-sb-url").value      = cfg.sb_url;
+  document.getElementById("cfg-anon-key").value    = cfg.anon_key || "";
   document.getElementById("cfg-admin-token").value = cfg.admin_token;
   cfgResetStatus();
   document.getElementById("settings-overlay").classList.add("open");
@@ -2066,12 +2681,17 @@ async function cfgTest() {
 }
 
 async function cfgSave() {
-  const url   = document.getElementById("cfg-sb-url").value.trim().replace(/\/+$/, "");
-  const token = document.getElementById("cfg-admin-token").value.trim();
-  const el    = document.getElementById("cfg-status");
+  const url      = document.getElementById("cfg-sb-url").value.trim().replace(/\/+$/, "");
+  const anonKey  = document.getElementById("cfg-anon-key").value.trim();
+  const token    = document.getElementById("cfg-admin-token").value.trim();
+  const el       = document.getElementById("cfg-status");
 
   if (!url || !url.startsWith("https://")) {
     el.textContent = "❌ الـ URL غير صحيح";
+    el.style.color = "var(--red)"; return;
+  }
+  if (!anonKey || !anonKey.startsWith("eyJ")) {
+    el.textContent = "❌ Anon Key غير صحيح";
     el.style.color = "var(--red)"; return;
   }
   if (!token) {
@@ -2079,14 +2699,13 @@ async function cfgSave() {
     el.style.color = "var(--red)"; return;
   }
 
-  const newCfg = { sb_url: url, admin_token: token };
+  const newCfg = { sb_url: url, anon_key: anonKey, admin_token: token };
   saveCfg(newCfg);
-  applyCfg(newCfg);
+  applyCfg(newCfg);   // يُعيد تهيئة _sb تلقائياً
 
   el.textContent = "✅ تم الحفظ — جارٍ إعادة الاتصال…";
   el.style.color = "var(--green)";
 
-  // إعادة تحميل البيانات بالإعدادات الجديدة
   setTimeout(async () => {
     settingsClose();
     toast("✅ تم حفظ إعدادات Supabase");
