@@ -1011,11 +1011,15 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
 // ══════════════════════════════════════════════
 //  CONFIG
 // ══════════════════════════════════════════════
-const SECRET   = "Mounir2026";
-const SB_URL   = "https://pcjbkickwdpouphkygeq.supabase.co";
-const SB_KEY   = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjamJraWNrd2Rwb3VwaGt5Z2VxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTAxNjI1NiwiZXhwIjoyMDk0NTkyMjU2fQ.cnvbQe4zm6G5pKJ9tFO388FQ_BBoXEulGgxdFq5ra3E";
-const LOCK_KEY = "stoc-admin-lock-v1";
-const PWA_BASE = "https://ayad-mounir.github.io/STOC-PWA/";
+const SB_URL      = "https://pcjbkickwdpouphkygeq.supabase.co";
+const SIGN_URL    = SB_URL + "/functions/v1/sign-license";
+// ✅ service_role key محذوف — كل العمليات تمر عبر Edge Function
+const PROXY_URL   = SB_URL + "/functions/v1/admin-proxy";
+// ⚠️ غيّر هذه القيمة في Supabase → Edge Functions → Secrets → ADMIN_TOKEN
+// وغيّرها هنا لتتطابق معها (هذا السر مختلف تماماً عن service_role key)
+const ADMIN_TOKEN = "STOC-ADMIN-CHANGE-ME-2026";
+const LOCK_KEY    = "stoc-admin-lock-v1";
+const PWA_BASE    = "https://ayad-mounir.github.io/STOC-PWA/";
 
 // ══════════════════════════════════════════════
 //  INSTALL
@@ -1090,14 +1094,36 @@ function openApp() {
 window.addEventListener("DOMContentLoaded", () => initLockScreen());
 
 // ══════════════════════════════════════════════
-//  SUPABASE
+//  ADMIN PROXY — بوابة آمنة بدلاً من Supabase مباشرة
 // ══════════════════════════════════════════════
-let sb = null;
 let _cache = [];
 
-function initSB() {
-  if (sb) return;
-  sb = window.supabase.createClient(SB_URL, SB_KEY);
+/**
+ * adminAPI — يرسل الطلبات لـ Edge Function بدلاً من الاتصال بـ Supabase مباشرة.
+ * @param {string} action  - اسم العملية (list, insert, freeze, delete, ...)
+ * @param {object|null} body - البيانات المرسلة (null للـ GET)
+ */
+async function adminAPI(action, body = null) {
+  try {
+    const isGet = body === null;
+    const opts  = {
+      method:  isGet ? "GET" : "POST",
+      headers: {
+        "Content-Type":  "application/json",
+        "X-Admin-Token": ADMIN_TOKEN,
+      },
+    };
+    const url = isGet ? PROXY_URL + "?action=" + action : PROXY_URL;
+    if (!isGet) opts.body = JSON.stringify({ action, ...body });
+    const res  = await fetch(url, opts);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: "HTTP " + res.status }));
+      return { data: null, error: err };
+    }
+    return await res.json();
+  } catch (e) {
+    return { data: null, error: { message: e.message || "Network error" } };
+  }
 }
 
 function setSBStatus(ok, msg) {
@@ -1109,9 +1135,18 @@ function setSBStatus(ok, msg) {
 }
 
 async function sign(payload) {
-  const msg = JSON.stringify(payload) + SECRET;
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(msg));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("").slice(0,32);
+  const res = await fetch(SIGN_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Admin-Token": ADMIN_TOKEN,
+    },
+    body: JSON.stringify({ action: "sign", payload })
+  });
+  if (!res.ok) throw new Error("فشل توليد التوقيع — تحقق من الاتصال");
+  const { sig } = await res.json();
+  if (!sig) throw new Error("الـ Edge Function لم تُعد توقيعاً صالحاً");
+  return sig;
 }
 
 function genCode(company) {
@@ -1131,8 +1166,7 @@ function withTimeout(promise, ms) {
 //  DATA
 // ══════════════════════════════════════════════
 async function loadCompanies() {
-  initSB();
-  const { data, error } = await sb.from("stoc_licenses").select("*").order("created_at",{ascending:false});
+  const { data, error } = await adminAPI("list");
   if (error) { setSBStatus(false, "خطأ في الاتصال"); console.error(error); return []; }
   setSBStatus(true, "متصل");
   _cache = data || [];
@@ -1311,14 +1345,11 @@ async function setCustomDate() {
 async function updateExpiry(newExpiry) {
   const c = _cache.find(x => x.code === _drCode);
   if (!c) return;
-  initSB();
   // إعادة حساب التوقيع بالبيانات الجديدة
   const newPayload = { company: c.company, url: c.sb_url||"", key: c.sb_key||"",
     expires: newExpiry||"", devices: c.devices, code: c.code, v:1 };
   const newSig = await sign(newPayload);
-  const { error } = await sb.from("stoc_licenses")
-    .update({ expires: newExpiry, sig: newSig })
-    .eq("code", _drCode);
+  const { error } = await adminAPI("update_expiry", { code: _drCode, expires: newExpiry, sig: newSig });
   if (error) { toast("❌ خطأ: " + error.message); return; }
   const label = newExpiry ? `📅 تم التمديد حتى ${newExpiry}` : "♾️ تم التحويل إلى دائم";
   toast(label);
@@ -1338,14 +1369,11 @@ async function saveDevices() {
   const c = _cache.find(x => x.code === _drCode);
   if (!c) return;
   const devices = parseInt(document.getElementById("dr-devices").value) || 5;
-  initSB();
   // إعادة حساب التوقيع بالبيانات الجديدة
   const newPayload = { company: c.company, url: c.sb_url||"", key: c.sb_key||"",
     expires: c.expires||"", devices: devices, code: c.code, v:1 };
   const newSig = await sign(newPayload);
-  const { error } = await sb.from("stoc_licenses")
-    .update({ devices, sig: newSig })
-    .eq("code", _drCode);
+  const { error } = await adminAPI("update_devices", { code: _drCode, devices, sig: newSig });
   if (error) { toast("❌ خطأ: " + error.message); return; }
   toast(`✅ تم الحفظ — ${devices} أجهزة`);
   await loadCompanies();
@@ -1357,10 +1385,7 @@ async function saveDevices() {
 async function drToggleFreeze() {
   const c = _cache.find(x => x.code === _drCode);
   if (!c) return;
-  initSB();
-  const { error } = await sb.from("stoc_licenses")
-    .update({ frozen: !c.frozen })
-    .eq("code", _drCode);
+  const { error } = await adminAPI("freeze", { code: _drCode, frozen: !c.frozen });
   if (error) { toast("❌ خطأ: " + error.message); return; }
   toast(c.frozen ? "✅ تم تفعيل الشركة" : "🔒 تم تجميد الشركة");
   await loadCompanies();
@@ -1373,8 +1398,7 @@ async function drDelete() {
   const c = _cache.find(x => x.code === _drCode);
   if (!c) return;
   if (!confirm(`هل أنت متأكد من حذف "${c.company}" نهائياً؟\nلا يمكن التراجع عن هذه العملية.`)) return;
-  initSB();
-  const { error } = await sb.from("stoc_licenses").delete().eq("code", _drCode);
+  const { error } = await adminAPI("delete", { code: _drCode });
   if (error) { toast("❌ خطأ في الحذف: " + error.message); return; }
   toast("🗑️ تم الحذف نهائياً");
   closeDrawer();
@@ -1417,8 +1441,7 @@ async function buildPayloadFresh(c) {
   const newSig = await sign(data);
   // حفظ الـ sig الجديد في DB إذا تغيّر
   if (newSig !== c.sig) {
-    initSB();
-    await sb.from("stoc_licenses").update({ sig: newSig }).eq("code", c.code);
+    await adminAPI("update_sig", { code: c.code, sig: newSig });
     c.sig = newSig; // تحديث الكاش المحلي
   }
   return { ...data, sig: newSig };
@@ -1489,8 +1512,7 @@ async function renderQR(link, canvasId, imgId, loadingId) {
 // ══════════════════════════════════════════════
 async function checkAdminDB() {
   try {
-    initSB();
-    const { error } = await sb.from("stoc_licenses").select("id").limit(1);
+    const { error } = await adminAPI("check");
     if (error && (error.code === "42P01" || error.message?.includes("does not exist"))) {
       document.getElementById("admin-setup-banner").style.display = "block";
     }
@@ -1691,9 +1713,8 @@ async function wizGenerate() {
   _lastPayload = payload;
 
   try {
-    initSB();
     const { error } = await withTimeout(
-      sb.from("stoc_licenses").insert({
+      adminAPI("insert", {
         company, code, sb_url: url, sb_key: key,
         expires: expires || null, devices, frozen: false, note: note || null, sig
       }), 10000
