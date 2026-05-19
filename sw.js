@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stoc-admin-v3.3';
+const CACHE_NAME = 'stoc-admin-v3.2';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
