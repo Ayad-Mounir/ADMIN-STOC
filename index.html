@@ -616,12 +616,12 @@ input::placeholder{color:var(--muted);}
    SETTINGS DRAWER
 ═══════════════════════════════ */
 #settings-overlay{
-  display:none;position:fixed;inset:0;z-index:800;
+  display:none;position:fixed;inset:0;z-index:10000;
   background:rgba(7,9,15,.75);backdrop-filter:blur(4px);
 }
 #settings-overlay.open{display:block;}
 #settings-drawer{
-  position:fixed;bottom:0;left:0;right:0;z-index:810;
+  position:fixed;bottom:0;left:0;right:0;z-index:10001;
   background:var(--surf);border-top:1px solid var(--border2);
   border-radius:24px 24px 0 0;
   padding:0 0 env(safe-area-inset-bottom,20px);
@@ -1518,19 +1518,26 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
     <div class="cfg-section-title">☁️ اتصال Supabase</div>
 
     <div class="cfg-field">
-      <label>Project URL</label>
-      <input type="text" id="cfg-sb-url"
-        placeholder="https://xxxx.supabase.co"
-        oninput="cfgResetStatus()"/>
-      <span class="cfg-hint">من لوحة Supabase → Project Settings → API → Project URL</span>
-    </div>
-
-    <div class="cfg-field">
-      <label>Anon Public Key</label>
+      <label>Anon Key — يكفي هذا الحقل فقط</label>
       <input type="text" id="cfg-anon-key"
         placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…"
-        oninput="cfgResetStatus()"/>
-      <span class="cfg-hint">من Project Settings → API → <strong>anon public</strong> (آمن للمتصفح)</span>
+        oninput="cfgAutoExtract()" dir="ltr"
+        style="font-family:monospace;font-size:11px;"/>
+      <span class="cfg-hint">
+        من Supabase → Project Settings → API → <strong>anon public</strong><br/>
+        سيتم استخراج الـ Project URL تلقائياً من هذا المفتاح ✨
+      </span>
+    </div>
+
+    <!-- URL مستخرج (للعرض فقط) -->
+    <div id="cfg-url-preview" style="display:none;
+      background:var(--bg);border:1px solid var(--border);
+      border-radius:10px;padding:10px 14px;margin-bottom:12px;">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:700;">
+        🔗 URL مستخرج تلقائياً
+      </div>
+      <div id="cfg-url-preview-val"
+        style="font-size:11px;color:var(--gold);font-family:monospace;word-break:break-all;direction:ltr;"></div>
     </div>
 
     <div class="cfg-field">
@@ -1541,12 +1548,15 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
       <span class="cfg-hint">يجب أن يطابق ADMIN_TOKEN في Supabase → Edge Functions → Secrets</span>
     </div>
 
+    <!-- حقل مخفي للـ URL (للتوافق مع بقية الكود) -->
+    <input type="hidden" id="cfg-sb-url"/>
+
     <!-- حالة الاتصال -->
     <div class="cfg-status" id="cfg-status">⏳ في انتظار الاختبار…</div>
 
     <div class="cfg-actions">
-      <button class="cfg-btn cfg-btn-outline" onclick="cfgTest()">🔌 اختبار الاتصال</button>
-      <button class="cfg-btn cfg-btn-gold"    onclick="cfgSave()">💾 حفظ وتطبيق</button>
+      <button class="cfg-btn cfg-btn-outline" onclick="cfgTest()">🔌 اختبار</button>
+      <button class="cfg-btn cfg-btn-gold"    onclick="cfgSave()">💾 حفظ</button>
     </div>
   </div>
 
@@ -2613,6 +2623,8 @@ function settingsOpen() {
   document.getElementById("cfg-anon-key").value    = cfg.anon_key || "";
   document.getElementById("cfg-admin-token").value = cfg.admin_token;
   cfgResetStatus();
+  // اعرض الـ URL المستخرج إذا كان الـ anon_key موجوداً
+  if (cfg.anon_key) cfgAutoExtract();
   document.getElementById("settings-overlay").classList.add("open");
   document.getElementById("settings-drawer").classList.add("open");
   document.body.style.overflow = "hidden";
@@ -2631,6 +2643,38 @@ function cfgResetStatus() {
   el.textContent = "⏳ في انتظار الاختبار…";
   el.style.color = "var(--muted)";
   el.style.borderColor = "var(--border)";
+}
+
+// ── استخراج URL تلقائياً من الـ Anon Key (JWT) ──
+function extractUrlFromJWT(anonKey) {
+  try {
+    const payload = JSON.parse(atob(anonKey.split(".")[1]));
+    // الـ ref هو subdomain الـ Supabase project: payload.ref أو من iss
+    const ref = payload.ref || (payload.iss && payload.iss.match(/https:\/\/([\w-]+)\.supabase\.co/)?.[1]);
+    if (ref) return "https://" + ref + ".supabase.co";
+  } catch {}
+  return null;
+}
+
+function cfgAutoExtract() {
+  cfgResetStatus();
+  const anonKey = document.getElementById("cfg-anon-key").value.trim();
+  const preview = document.getElementById("cfg-url-preview");
+  const previewVal = document.getElementById("cfg-url-preview-val");
+  const urlInput = document.getElementById("cfg-sb-url");
+
+  if (anonKey.startsWith("eyJ") && anonKey.split(".").length === 3) {
+    const url = extractUrlFromJWT(anonKey);
+    if (url) {
+      urlInput.value = url;
+      previewVal.textContent = url;
+      preview.style.display = "block";
+      preview.style.borderColor = "var(--green)";
+      return;
+    }
+  }
+  urlInput.value = "";
+  preview.style.display = "none";
 }
 
 async function cfgTest() {
@@ -2681,19 +2725,23 @@ async function cfgTest() {
 }
 
 async function cfgSave() {
-  const url      = document.getElementById("cfg-sb-url").value.trim().replace(/\/+$/, "");
   const anonKey  = document.getElementById("cfg-anon-key").value.trim();
   const token    = document.getElementById("cfg-admin-token").value.trim();
   const el       = document.getElementById("cfg-status");
 
-  if (!url || !url.startsWith("https://")) {
-    el.textContent = "❌ الـ URL غير صحيح";
-    el.style.color = "var(--red)"; return;
-  }
   if (!anonKey || !anonKey.startsWith("eyJ")) {
-    el.textContent = "❌ Anon Key غير صحيح";
+    el.textContent = "❌ Anon Key غير صحيح — يجب أن يبدأ بـ eyJ";
     el.style.color = "var(--red)"; return;
   }
+
+  // استخراج URL تلقائياً
+  const url = extractUrlFromJWT(anonKey);
+  if (!url) {
+    el.textContent = "❌ تعذّر استخراج الـ URL من الـ Anon Key — تأكد أنه صحيح";
+    el.style.color = "var(--red)"; return;
+  }
+  document.getElementById("cfg-sb-url").value = url;
+
   if (!token) {
     el.textContent = "❌ Admin Token مطلوب";
     el.style.color = "var(--red)"; return;
