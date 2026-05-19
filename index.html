@@ -611,6 +611,97 @@ input::placeholder{color:var(--muted);}
   .wizard-body{padding:16px;}
   .wizard-footer{padding:12px 16px;}
 }
+
+/* ═══════════════════════════════
+   SETTINGS DRAWER
+═══════════════════════════════ */
+#settings-overlay{
+  display:none;position:fixed;inset:0;z-index:800;
+  background:rgba(7,9,15,.75);backdrop-filter:blur(4px);
+}
+#settings-overlay.open{display:block;}
+#settings-drawer{
+  position:fixed;bottom:0;left:0;right:0;z-index:810;
+  background:var(--surf);border-top:1px solid var(--border2);
+  border-radius:24px 24px 0 0;
+  padding:0 0 env(safe-area-inset-bottom,20px);
+  max-height:88vh;overflow-y:auto;
+  transform:translateY(100%);
+  transition:transform .35s cubic-bezier(.32,.72,0,1);
+}
+#settings-drawer.open{transform:translateY(0);}
+.cfg-section{
+  padding:20px;border-bottom:1px solid var(--border);
+}
+.cfg-section:last-child{border-bottom:none;}
+.cfg-section-title{
+  font-size:11px;font-weight:800;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.8px;
+  margin-bottom:14px;display:flex;align-items:center;gap:6px;
+}
+.cfg-field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+.cfg-field:last-child{margin-bottom:0;}
+.cfg-field label{
+  font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.cfg-field input{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:10px;color:var(--text);
+  font-family:'Cairo',sans-serif;font-size:12px;
+  padding:10px 14px;outline:none;
+  transition:border-color .2s;width:100%;
+  direction:ltr;text-align:left;
+}
+.cfg-field input:focus{border-color:var(--gold);}
+.cfg-field input.err{border-color:var(--red);}
+.cfg-field input.ok{border-color:var(--green);}
+.cfg-hint{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.6;}
+.cfg-status{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;border-radius:10px;
+  background:var(--bg);border:1px solid var(--border);
+  font-size:12px;font-weight:700;color:var(--muted);
+  margin-bottom:14px;min-height:40px;
+}
+.cfg-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.cfg-btn{
+  flex:1;padding:11px 16px;border-radius:10px;
+  font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .2s;border:none;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.cfg-btn-gold{
+  background:linear-gradient(135deg,var(--dim),var(--gold));color:#000;
+}
+.cfg-btn-gold:hover{filter:brightness(1.1);}
+.cfg-btn-outline{
+  background:transparent;border:1px solid var(--border2);
+  color:var(--muted);
+}
+.cfg-btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+.cfg-check-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 0;border-bottom:1px dashed var(--border);
+}
+.cfg-check-row:last-child{border-bottom:none;}
+.cfg-check-lbl{font-size:12px;font-weight:700;color:var(--muted);}
+.cfg-check-dot{
+  font-size:11px;font-weight:700;padding:3px 10px;
+  border-radius:20px;
+}
+.cfg-check-dot.ok{background:#10b98115;color:var(--green);}
+.cfg-check-dot.err{background:#ef444415;color:var(--red);}
+.cfg-check-dot.wait{background:var(--border);color:var(--muted);}
+/* زر الإعدادات في الهيدر */
+#settings-btn{
+  width:34px;height:34px;border-radius:9px;
+  border:1px solid var(--border);background:transparent;
+  color:var(--muted);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+#settings-btn:hover{border-color:var(--gold);color:var(--gold);}
 </style>
 </head>
 <body>
@@ -643,6 +734,7 @@ input::placeholder{color:var(--muted);}
   </div>
   <div class="header-right">
     <div id="sb-status">⏳ جارٍ الاتصال…</div>
+    <button id="settings-btn" onclick="settingsOpen()" title="الإعدادات">⚙️</button>
     <div class="badge-admin">🔐 المدير</div>
   </div>
 </div>
@@ -1003,23 +1095,130 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
   </div>
 </div>
 
+<!-- ══ SETTINGS DRAWER ══ -->
+<div id="settings-overlay" onclick="settingsClose()"></div>
+<div id="settings-drawer">
+  <div class="drawer-handle"></div>
+
+  <!-- Header -->
+  <div class="drawer-header">
+    <div class="drawer-avatar" style="background:linear-gradient(135deg,#1e3a5f,#3b82f6);">⚙️</div>
+    <div>
+      <div class="drawer-title">إعدادات التطبيق</div>
+      <div class="drawer-code">STOC Manager · Admin Config</div>
+    </div>
+    <button class="drawer-close" onclick="settingsClose()">✕</button>
+  </div>
+
+  <!-- ── القسم 1: اتصال Supabase ── -->
+  <div class="cfg-section">
+    <div class="cfg-section-title">☁️ اتصال Supabase</div>
+
+    <div class="cfg-field">
+      <label>Project URL</label>
+      <input type="text" id="cfg-sb-url"
+        placeholder="https://xxxx.supabase.co"
+        oninput="cfgResetStatus()"/>
+      <span class="cfg-hint">من لوحة Supabase → Project Settings → API → Project URL</span>
+    </div>
+
+    <div class="cfg-field">
+      <label>Admin Token</label>
+      <input type="password" id="cfg-admin-token"
+        placeholder="STOC-ADMIN-…"
+        oninput="cfgResetStatus()"/>
+      <span class="cfg-hint">يجب أن يطابق ADMIN_TOKEN في Supabase → Edge Functions → Secrets</span>
+    </div>
+
+    <!-- حالة الاتصال -->
+    <div class="cfg-status" id="cfg-status">⏳ في انتظار الاختبار…</div>
+
+    <div class="cfg-actions">
+      <button class="cfg-btn cfg-btn-outline" onclick="cfgTest()">🔌 اختبار الاتصال</button>
+      <button class="cfg-btn cfg-btn-gold"    onclick="cfgSave()">💾 حفظ وتطبيق</button>
+    </div>
+  </div>
+
+  <!-- ── القسم 2: حالة النظام ── -->
+  <div class="cfg-section">
+    <div class="cfg-section-title">🩺 حالة النظام</div>
+    <div id="cfg-checks">
+      <div class="cfg-check-row">
+        <span class="cfg-check-lbl">جدول stoc_licenses</span>
+        <span class="cfg-check-dot wait" id="chk-table">—</span>
+      </div>
+      <div class="cfg-check-row">
+        <span class="cfg-check-lbl">Edge Function admin-proxy</span>
+        <span class="cfg-check-dot wait" id="chk-proxy">—</span>
+      </div>
+      <div class="cfg-check-row">
+        <span class="cfg-check-lbl">Edge Function sign-license</span>
+        <span class="cfg-check-dot wait" id="chk-sign">—</span>
+      </div>
+    </div>
+    <button class="cfg-btn cfg-btn-outline" style="margin-top:12px;width:100%;"
+      onclick="cfgRunChecks()">🔄 فحص الآن</button>
+  </div>
+
+  <!-- ── القسم 3: معلومات الإعداد الأولي ── -->
+  <div class="cfg-section">
+    <div class="cfg-section-title">📋 خطوات الإعداد الأولي</div>
+    <div style="font-size:12px;color:var(--muted);line-height:2;">
+      <div>1️⃣ &nbsp;أنشئ مشروع Supabase جديد</div>
+      <div>2️⃣ &nbsp;شغّل SQL الجدول من البانر أعلاه</div>
+      <div>3️⃣ &nbsp;أنشئ Edge Function <code style="color:var(--gold);font-size:11px;">sign-license</code></div>
+      <div>4️⃣ &nbsp;أضف Secrets: <code style="color:var(--gold);font-size:11px;">LICENSE_SECRET</code> و <code style="color:var(--gold);font-size:11px;">ADMIN_TOKEN</code></div>
+      <div>5️⃣ &nbsp;أدخل الـ URL والـ Token هنا واضغط "حفظ وتطبيق"</div>
+    </div>
+    <div style="margin-top:14px;">
+      <a href="https://supabase.com/dashboard" target="_blank"
+         class="cfg-btn cfg-btn-outline"
+         style="text-decoration:none;display:flex;width:100%;box-sizing:border-box;">
+        🔗 فتح لوحة Supabase
+      </a>
+    </div>
+  </div>
+</div>
+
 <canvas id="qr-canvas" style="display:none;"></canvas>
 <input id="lic-link-input" style="display:none;" readonly/>
 <div id="toast"></div>
 
 <script>
 // ══════════════════════════════════════════════
-//  CONFIG
+//  CONFIG — يُقرأ من localStorage أولاً
 // ══════════════════════════════════════════════
-const SB_URL      = "https://pcjbkickwdpouphkygeq.supabase.co";
-const SIGN_URL    = SB_URL + "/functions/v1/sign-license";
-// ✅ service_role key محذوف — كل العمليات تمر عبر Edge Function
-const PROXY_URL   = SB_URL + "/functions/v1/admin-proxy";
-// ⚠️ غيّر هذه القيمة في Supabase → Edge Functions → Secrets → ADMIN_TOKEN
-// وغيّرها هنا لتتطابق معها (هذا السر مختلف تماماً عن service_role key)
-const ADMIN_TOKEN = "STOC-ADMIN-CHANGE-ME-2026";
+const CFG_KEY     = "stoc-admin-cfg-v1";
 const LOCK_KEY    = "stoc-admin-lock-v1";
 const PWA_BASE    = "https://ayad-mounir.github.io/STOC-PWA/";
+
+// القيم الافتراضية (تُستبدل عند الحفظ)
+const _DEFAULTS = {
+  sb_url:      "https://pcjbkickwdpouphkygeq.supabase.co",
+  admin_token: "STOC-ADMIN-CHANGE-ME-2026",
+};
+
+function loadCfg() {
+  try { return Object.assign({}, _DEFAULTS, JSON.parse(localStorage.getItem(CFG_KEY))); }
+  catch { return Object.assign({}, _DEFAULTS); }
+}
+function saveCfg(obj) {
+  localStorage.setItem(CFG_KEY, JSON.stringify(obj));
+}
+
+let _cfg       = loadCfg();
+let SB_URL     = _cfg.sb_url;
+let SIGN_URL   = SB_URL + "/functions/v1/sign-license";
+let PROXY_URL  = SB_URL + "/functions/v1/admin-proxy";
+let ADMIN_TOKEN = _cfg.admin_token;
+
+function applyCfg(cfg) {
+  _cfg        = cfg;
+  SB_URL      = cfg.sb_url;
+  SIGN_URL    = SB_URL + "/functions/v1/sign-license";
+  PROXY_URL   = SB_URL + "/functions/v1/admin-proxy";
+  ADMIN_TOKEN = cfg.admin_token;
+}
 
 // ══════════════════════════════════════════════
 //  INSTALL
@@ -1791,6 +1990,165 @@ function wizCopySql() {
 // ══════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+//  SETTINGS DRAWER
+// ══════════════════════════════════════════════
+function settingsOpen() {
+  const cfg = loadCfg();
+  document.getElementById("cfg-sb-url").value      = cfg.sb_url;
+  document.getElementById("cfg-admin-token").value = cfg.admin_token;
+  cfgResetStatus();
+  document.getElementById("settings-overlay").classList.add("open");
+  document.getElementById("settings-drawer").classList.add("open");
+  document.body.style.overflow = "hidden";
+  // فحص تلقائي عند الفتح
+  cfgRunChecks();
+}
+
+function settingsClose() {
+  document.getElementById("settings-overlay").classList.remove("open");
+  document.getElementById("settings-drawer").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function cfgResetStatus() {
+  const el = document.getElementById("cfg-status");
+  el.textContent = "⏳ في انتظار الاختبار…";
+  el.style.color = "var(--muted)";
+  el.style.borderColor = "var(--border)";
+}
+
+async function cfgTest() {
+  const url   = document.getElementById("cfg-sb-url").value.trim().replace(/\/+$/, "");
+  const token = document.getElementById("cfg-admin-token").value.trim();
+  const el    = document.getElementById("cfg-status");
+
+  if (!url || !url.startsWith("https://")) {
+    el.textContent = "❌ الـ URL غير صحيح — يجب أن يبدأ بـ https://";
+    el.style.color = "var(--red)"; return;
+  }
+  if (!token) {
+    el.textContent = "❌ أدخل Admin Token";
+    el.style.color = "var(--red)"; return;
+  }
+
+  el.textContent = "⏳ جارٍ الاتصال…";
+  el.style.color = "var(--muted)";
+
+  try {
+    // اختبار عبر admin-proxy
+    const res = await withTimeout(fetch(url + "/functions/v1/admin-proxy?action=check", {
+      headers: { "X-Admin-Token": token }
+    }), 8000);
+
+    if (res.status === 401) {
+      el.textContent = "❌ Admin Token غير صحيح";
+      el.style.color = "var(--red)";
+      document.getElementById("cfg-admin-token").classList.add("err");
+      return;
+    }
+    if (res.ok || res.status === 404) {
+      el.textContent = "🟢 الاتصال ناجح — يمكنك الحفظ";
+      el.style.color = "var(--green)";
+      document.getElementById("cfg-sb-url").classList.remove("err");
+      document.getElementById("cfg-sb-url").classList.add("ok");
+      document.getElementById("cfg-admin-token").classList.remove("err");
+      document.getElementById("cfg-admin-token").classList.add("ok");
+    } else {
+      el.textContent = "⚠️ استجابة غير متوقعة: HTTP " + res.status;
+      el.style.color = "var(--gold)";
+    }
+  } catch(e) {
+    el.textContent = "❌ تعذّر الاتصال — تأكد من الـ URL";
+    el.style.color = "var(--red)";
+    document.getElementById("cfg-sb-url").classList.add("err");
+  }
+}
+
+async function cfgSave() {
+  const url   = document.getElementById("cfg-sb-url").value.trim().replace(/\/+$/, "");
+  const token = document.getElementById("cfg-admin-token").value.trim();
+  const el    = document.getElementById("cfg-status");
+
+  if (!url || !url.startsWith("https://")) {
+    el.textContent = "❌ الـ URL غير صحيح";
+    el.style.color = "var(--red)"; return;
+  }
+  if (!token) {
+    el.textContent = "❌ Admin Token مطلوب";
+    el.style.color = "var(--red)"; return;
+  }
+
+  const newCfg = { sb_url: url, admin_token: token };
+  saveCfg(newCfg);
+  applyCfg(newCfg);
+
+  el.textContent = "✅ تم الحفظ — جارٍ إعادة الاتصال…";
+  el.style.color = "var(--green)";
+
+  // إعادة تحميل البيانات بالإعدادات الجديدة
+  setTimeout(async () => {
+    settingsClose();
+    toast("✅ تم حفظ إعدادات Supabase");
+    setSBStatus(false, "جارٍ إعادة الاتصال…");
+    const list = await loadCompanies();
+    updateStats(list);
+    renderList(document.getElementById("search-input").value);
+    checkAdminDB();
+  }, 600);
+}
+
+async function cfgRunChecks() {
+  const url   = (document.getElementById("cfg-sb-url").value.trim().replace(/\/+$/, "")) || SB_URL;
+  const token = (document.getElementById("cfg-admin-token").value.trim()) || ADMIN_TOKEN;
+
+  const setChk = (id, state, label) => {
+    const el = document.getElementById(id);
+    el.className = "cfg-check-dot " + state;
+    el.textContent = label;
+  };
+
+  setChk("chk-table", "wait", "⏳");
+  setChk("chk-proxy", "wait", "⏳");
+  setChk("chk-sign",  "wait", "⏳");
+
+  // فحص admin-proxy + جدول
+  try {
+    const r = await withTimeout(fetch(url + "/functions/v1/admin-proxy?action=check", {
+      headers: { "X-Admin-Token": token }
+    }), 6000);
+    if (r.status === 401) {
+      setChk("chk-proxy", "err", "❌ Token خاطئ");
+      setChk("chk-table", "err", "—");
+    } else if (r.ok) {
+      setChk("chk-proxy", "ok", "✅ يعمل");
+      const data = await r.json().catch(() => ({}));
+      setChk("chk-table", data.table_exists !== false ? "ok" : "err",
+             data.table_exists !== false ? "✅ موجود" : "❌ غير موجود");
+    } else {
+      setChk("chk-proxy", "err", "❌ " + r.status);
+      setChk("chk-table", "wait", "—");
+    }
+  } catch {
+    setChk("chk-proxy", "err", "❌ لا اتصال");
+    setChk("chk-table", "wait", "—");
+  }
+
+  // فحص sign-license
+  try {
+    const r = await withTimeout(fetch(url + "/functions/v1/sign-license", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "ping" })
+    }), 6000);
+    // أي رد حتى لو 400 يعني الـ function شغّالة
+    setChk("chk-sign", r.status < 500 ? "ok" : "err",
+           r.status < 500 ? "✅ يعمل" : "❌ خطأ " + r.status);
+  } catch {
+    setChk("chk-sign", "err", "❌ لا اتصال");
+  }
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   initLockScreen();
 });
