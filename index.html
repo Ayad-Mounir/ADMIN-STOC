@@ -76,7 +76,7 @@ body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-h
 }
 .lock-btn:hover{filter:brightness(1.1);}
 .lock-err{font-size:12px;color:var(--red);min-height:20px;margin-top:8px;text-align:center;}
-
+.lock-first{font-size:11px;color:#475569;margin-top:14px;text-align:center;line-height:1.7;}
 
 /* ═══════════════════════════════
    HEADER
@@ -611,279 +611,6 @@ input::placeholder{color:var(--muted);}
   .wizard-body{padding:16px;}
   .wizard-footer{padding:12px 16px;}
 }
-
-/* ═══════════════════════════════
-   SETTINGS DRAWER
-═══════════════════════════════ */
-#settings-overlay{
-  display:none;position:fixed;inset:0;z-index:10000;
-  background:rgba(7,9,15,.75);backdrop-filter:blur(4px);
-}
-#settings-overlay.open{display:block;}
-#settings-drawer{
-  position:fixed;bottom:0;left:0;right:0;z-index:10001;
-  background:var(--surf);border-top:1px solid var(--border2);
-  border-radius:24px 24px 0 0;
-  padding:0 0 env(safe-area-inset-bottom,20px);
-  max-height:88vh;overflow-y:auto;
-  transform:translateY(100%);
-  transition:transform .35s cubic-bezier(.32,.72,0,1);
-}
-#settings-drawer.open{transform:translateY(0);}
-.cfg-section{
-  padding:20px;border-bottom:1px solid var(--border);
-}
-.cfg-section:last-child{border-bottom:none;}
-.cfg-section-title{
-  font-size:11px;font-weight:800;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.8px;
-  margin-bottom:14px;display:flex;align-items:center;gap:6px;
-}
-.cfg-field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
-.cfg-field:last-child{margin-bottom:0;}
-.cfg-field label{
-  font-size:11px;font-weight:700;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.5px;
-}
-.cfg-field input{
-  background:var(--bg);border:1px solid var(--border);
-  border-radius:10px;color:var(--text);
-  font-family:'Cairo',sans-serif;font-size:12px;
-  padding:10px 14px;outline:none;
-  transition:border-color .2s;width:100%;
-  direction:ltr;text-align:left;
-}
-.cfg-field input:focus{border-color:var(--gold);}
-.cfg-field input.err{border-color:var(--red);}
-.cfg-field input.ok{border-color:var(--green);}
-.cfg-hint{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.6;}
-.cfg-status{
-  display:flex;align-items:center;gap:8px;
-  padding:10px 14px;border-radius:10px;
-  background:var(--bg);border:1px solid var(--border);
-  font-size:12px;font-weight:700;color:var(--muted);
-  margin-bottom:14px;min-height:40px;
-}
-.cfg-actions{display:flex;gap:8px;flex-wrap:wrap;}
-.cfg-btn{
-  flex:1;padding:11px 16px;border-radius:10px;
-  font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;
-  cursor:pointer;transition:all .2s;border:none;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-}
-.cfg-btn-gold{
-  background:linear-gradient(135deg,var(--dim),var(--gold));color:#000;
-}
-.cfg-btn-gold:hover{filter:brightness(1.1);}
-.cfg-btn-outline{
-  background:transparent;border:1px solid var(--border2);
-  color:var(--muted);
-}
-.cfg-btn-outline:hover{border-color:var(--gold);color:var(--gold);}
-.cfg-check-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:8px 0;border-bottom:1px dashed var(--border);
-}
-.cfg-check-row:last-child{border-bottom:none;}
-.cfg-check-lbl{font-size:12px;font-weight:700;color:var(--muted);}
-.cfg-check-dot{
-  font-size:11px;font-weight:700;padding:3px 10px;
-  border-radius:20px;
-}
-.cfg-check-dot.ok{background:#10b98115;color:var(--green);}
-.cfg-check-dot.err{background:#ef444415;color:var(--red);}
-.cfg-check-dot.wait{background:var(--border);color:var(--muted);}
-/* زر الإعدادات في الهيدر */
-#settings-btn{
-  width:34px;height:34px;border-radius:9px;
-  border:1px solid var(--border);background:transparent;
-  color:var(--muted);font-size:16px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:all .2s;
-}
-#settings-btn:hover{border-color:var(--gold);color:var(--gold);}
-
-/* ═══════════════════════════════
-   VISUAL GUIDE CARDS
-═══════════════════════════════ */
-.visual-card{
-  background:var(--bg);border:1px solid var(--border2);
-  border-radius:12px;padding:14px 16px;margin-bottom:14px;
-}
-.visual-path{
-  display:flex;flex-wrap:wrap;align-items:center;gap:6px;
-  margin-bottom:8px;
-}
-.vp-btn{
-  background:var(--surf2);border:1px solid var(--border2);
-  border-radius:8px;padding:5px 12px;
-  font-size:12px;font-weight:700;color:var(--text);
-  white-space:nowrap;
-}
-.vp-arrow{
-  color:var(--muted);font-size:14px;font-weight:700;
-}
-.vp-field{
-  font-size:12px;color:var(--muted);
-}
-.vp-highlight{
-  background:#f59e0b15;border:1px solid #f59e0b40;
-  border-radius:8px;padding:5px 12px;
-  font-size:12px;font-weight:800;color:var(--gold);
-  white-space:nowrap;
-}
-.visual-tip{
-  font-size:11px;color:var(--muted);
-  padding-top:8px;border-top:1px dashed var(--border);
-  line-height:1.7;
-}
-.step-open-btn{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:11px 18px;border-radius:10px;
-  background:linear-gradient(135deg,#1e3a5f,#1e4a8a);
-  border:1px solid #3b82f640;color:#7aacf0;
-  font-size:13px;font-weight:800;
-  text-decoration:none;font-family:'Cairo',sans-serif;
-  transition:all .2s;cursor:pointer;
-  flex:1;justify-content:center;
-}
-.step-open-btn:hover{border-color:#3b82f6;color:#93bbf8;}
-
-/* ═══════════════════════════════
-   SETUP GUIDE OVERLAY
-═══════════════════════════════ */
-#guide-overlay{
-  display:none;position:fixed;inset:0;z-index:900;
-  background:var(--bg);overflow-y:auto;
-}
-#guide-overlay.open{display:block;}
-.guide-topbar{
-  position:sticky;top:0;z-index:10;
-  background:var(--bg);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 20px;gap:12px;
-}
-.guide-topbar-left{flex:1;}
-.guide-topbar-title{font-size:15px;font-weight:800;color:var(--gold);}
-.guide-topbar-sub{font-size:11px;color:var(--muted);margin-top:2px;}
-.guide-close{
-  width:36px;height:36px;border-radius:10px;border:1px solid var(--border);
-  background:transparent;color:var(--muted);font-size:14px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.guide-close:hover{border-color:var(--red);color:var(--red);}
-.guide-body{padding:16px 16px 80px;}
-.step-card{
-  background:var(--surf);border:1px solid var(--border);
-  border-radius:16px;margin-bottom:10px;overflow:hidden;
-  transition:border-color .25s;
-}
-.step-card.done{border-color:#10b98135;}
-.step-card.active{border-color:var(--gold);}
-.step-head{
-  display:flex;align-items:center;gap:14px;
-  padding:15px 18px;cursor:pointer;user-select:none;
-}
-.step-num{
-  width:32px;height:32px;border-radius:50%;flex-shrink:0;
-  background:var(--bg);border:2px solid var(--border2);
-  display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:900;color:var(--muted);transition:all .2s;
-}
-.step-card.done  .step-num{background:#10b98120;border-color:var(--green);color:var(--green);}
-.step-card.active .step-num{background:linear-gradient(135deg,var(--dim),var(--gold));border-color:var(--gold);color:#000;}
-.step-head-text{flex:1;}
-.step-title{font-size:13px;font-weight:800;color:var(--text);}
-.step-sub{font-size:10px;color:var(--muted);margin-top:2px;}
-.step-badge{
-  font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;
-  background:var(--border);color:var(--muted);flex-shrink:0;
-}
-.step-card.done  .step-badge{background:#10b98115;color:var(--green);}
-.step-card.active .step-badge{background:#f59e0b15;color:var(--gold);}
-.step-body{
-  display:none;padding:0 18px 18px;
-  border-top:1px solid var(--border);
-}
-.step-card.active .step-body{display:block;}
-.step-desc{font-size:12px;color:var(--muted);line-height:2;padding:13px 0 8px;}
-.step-desc strong{color:var(--text);font-weight:800;}
-.step-desc code{
-  background:var(--bg);border:1px solid var(--border);border-radius:5px;
-  padding:1px 6px;font-size:11px;color:var(--gold);font-family:monospace;
-}
-.code-block{
-  background:var(--bg);border:1px solid var(--border);
-  border-radius:12px;overflow:hidden;margin:10px 0;
-}
-.code-block-hdr{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:8px 14px;border-bottom:1px solid var(--border);
-}
-.code-lbl{font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;}
-.copy-btn{
-  font-size:10px;font-weight:800;color:var(--gold);
-  background:transparent;border:1px solid var(--border);
-  border-radius:7px;padding:4px 10px;cursor:pointer;
-  transition:all .2s;font-family:'Cairo',sans-serif;
-}
-.copy-btn:hover{border-color:var(--gold);background:#f59e0b10;}
-.copy-btn.copied{color:var(--green);border-color:var(--green);}
-.code-pre{
-  font-family:'Courier New',monospace;font-size:10px;
-  color:#8fa3bf;line-height:1.75;padding:14px;margin:0;
-  white-space:pre;overflow-x:auto;max-height:230px;overflow-y:auto;
-}
-.secret-table{margin:10px 0;display:flex;flex-direction:column;gap:8px;}
-.secret-row{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 14px;background:var(--bg);
-  border:1px solid var(--border);border-radius:10px;flex-wrap:wrap;
-}
-.secret-key{font-family:monospace;font-size:12px;font-weight:700;color:var(--gold);min-width:120px;}
-.secret-val{font-family:monospace;font-size:11px;color:var(--muted);flex:1;word-break:break-all;}
-.secret-copy{
-  font-size:10px;font-weight:800;color:var(--muted);
-  background:transparent;border:1px solid var(--border);
-  border-radius:7px;padding:4px 10px;cursor:pointer;
-  transition:all .2s;font-family:'Cairo',sans-serif;flex-shrink:0;
-}
-.secret-copy:hover{border-color:var(--gold);color:var(--gold);}
-.secret-copy.copied{color:var(--green);border-color:var(--green);}
-.step-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
-.step-link{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:9px 16px;border-radius:10px;font-size:12px;font-weight:700;
-  text-decoration:none;border:1px solid var(--border);
-  color:var(--muted);background:transparent;
-  transition:all .2s;font-family:'Cairo',sans-serif;cursor:pointer;
-}
-.step-link:hover{border-color:var(--gold);color:var(--gold);}
-.step-done-btn{
-  padding:9px 16px;border-radius:10px;font-size:12px;font-weight:700;
-  background:linear-gradient(135deg,var(--dim),var(--gold));
-  color:#000;border:none;cursor:pointer;font-family:'Cairo',sans-serif;
-  display:inline-flex;align-items:center;gap:6px;transition:filter .2s;
-}
-.step-done-btn:hover{filter:brightness(1.1);}
-.step-warn{
-  background:#f59e0b08;border:1px solid #f59e0b30;border-radius:10px;
-  padding:10px 14px;font-size:11px;color:#c8a060;line-height:1.9;margin:10px 0;
-}
-.step-warn strong{color:var(--gold);}
-.step-info{
-  background:#3b82f608;border:1px solid #3b82f635;border-radius:10px;
-  padding:10px 14px;font-size:11px;color:#7aacf0;line-height:1.9;margin:10px 0;
-}
-#open-guide-btn{
-  width:100%;display:flex;align-items:center;justify-content:center;
-  gap:8px;padding:12px;border-radius:12px;
-  background:linear-gradient(135deg,#1a2f4a,#1e3f6a);
-  border:1px solid #3b82f640;color:#7aacf0;
-  font-size:13px;font-weight:800;cursor:pointer;
-  font-family:'Cairo',sans-serif;transition:all .2s;
-}
-#open-guide-btn:hover{border-color:#3b82f6;color:#93bbf8;}
 </style>
 </head>
 <body>
@@ -892,30 +619,14 @@ input::placeholder{color:var(--muted);}
 <div id="lock-screen">
   <div class="lock-ico">🔐</div>
   <div class="lock-title">STOC Manager</div>
-  <div class="lock-sub" id="lock-sub">تسجيل دخول المدير</div>
-
-  <!-- حالة: جارٍ التحقق -->
-  <div id="lock-checking" style="display:block;">
-    <div style="font-size:12px;color:var(--muted);text-align:center;">⏳ جارٍ التحقق…</div>
-  </div>
-
-  <!-- حالة: إعداد مطلوب -->
-  <div id="lock-setup-msg" style="display:none;text-align:center;">
-    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.9;">
-      لم يتم إعداد Supabase بعد.<br/>افتح الإعدادات وأدخل Project URL والـ Anon Key.
-    </div>
-    <button class="lock-btn" onclick="settingsOpen()">⚙️ فتح الإعدادات</button>
-  </div>
-
-  <!-- حالة: نموذج الدخول -->
-  <div id="lock-form" style="display:none;width:100%;">
-    <input type="email" id="lock-email" placeholder="admin@example.com"
-      onkeydown="if(event.key==='Enter')document.getElementById('lock-input').focus()"
-      style="margin-bottom:10px;"/>
-    <input type="password" id="lock-input" placeholder="••••••••"
-      onkeydown="if(event.key==='Enter')unlockApp()"/>
-    <div class="lock-err" id="lock-err"></div>
-    <button class="lock-btn" onclick="unlockApp()">🔓 دخول</button>
+  <div class="lock-sub" id="lock-sub">أدخل كلمة السر للدخول</div>
+  <input type="password" id="lock-input" placeholder="••••••••"
+    onkeydown="if(event.key==='Enter')unlockApp()"/>
+  <div class="lock-err" id="lock-err"></div>
+  <button class="lock-btn" onclick="unlockApp()">🔓 دخول</button>
+  <div class="lock-first" id="lock-first" style="display:none">
+    أول مرة — اختر كلمة سر للتطبيق<br/>
+    <span style="color:var(--gold)">ستُحفظ على هذا الجهاز فقط</span>
   </div>
 </div>
 
@@ -927,20 +638,11 @@ input::placeholder{color:var(--muted);}
     <div class="header-ico">📦</div>
     <div>
       <div class="header-title">STOC Manager</div>
-      <div class="header-sub">لوحة تفعيل الشركات · v3.2</div>
+      <div class="header-sub">لوحة تفعيل الشركات · v3.3</div>
     </div>
   </div>
   <div class="header-right">
     <div id="sb-status">⏳ جارٍ الاتصال…</div>
-    <button id="settings-btn" onclick="settingsOpen()" title="الإعدادات">⚙️</button>
-    <button onclick="signOutAdmin()" title="خروج"
-      style="width:34px;height:34px;border-radius:9px;border:1px solid var(--border);
-             background:transparent;color:var(--muted);font-size:15px;cursor:pointer;
-             display:flex;align-items:center;justify-content:center;transition:all .2s;"
-      onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
-      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
-      🚪
-    </button>
     <div class="badge-admin">🔐 المدير</div>
   </div>
 </div>
@@ -1301,375 +1003,19 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
   </div>
 </div>
 
-<!-- ══ SETUP GUIDE ══ -->
-<div id="guide-overlay">
-
-  <div class="guide-topbar">
-    <div class="guide-topbar-left">
-      <div class="guide-topbar-title">🚀 دليل الإعداد من الصفر</div>
-      <div class="guide-topbar-sub" id="guide-progress-sub">الخطوة 1 من 6</div>
-    </div>
-    <button class="guide-close" onclick="guideClose()">✕</button>
-  </div>
-
-  <!-- شريط التقدم -->
-  <div style="height:4px;background:var(--border);position:sticky;top:57px;z-index:9;">
-    <div id="guide-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--dim),var(--gold));width:16%;transition:width .4s;"></div>
-  </div>
-
-  <div class="guide-body">
-
-    <!-- ══ الخطوة 1: إنشاء حساب Supabase ══ -->
-    <div class="step-card active" id="step-1">
-      <div class="step-head" onclick="guideToggle(1)">
-        <div class="step-num">1</div>
-        <div class="step-head-text">
-          <div class="step-title">إنشاء حساب Supabase مجاني</div>
-          <div class="step-sub">لا يحتاج بطاقة بنكية</div>
-        </div>
-        <div class="step-badge">البداية</div>
-      </div>
-      <div class="step-body">
-        <!-- بطاقة بصرية -->
-        <div class="visual-card">
-          <div class="visual-path">
-            <span class="vp-site">supabase.com</span>
-            <span class="vp-arrow">←</span>
-            <span class="vp-btn">Sign Up</span>
-            <span class="vp-arrow">←</span>
-            <span class="vp-btn">Continue with GitHub</span>
-          </div>
-          <div class="visual-tip">💡 أسرع طريقة: سجّل بحساب GitHub أو Google</div>
-        </div>
-        <div class="step-actions">
-          <a class="step-open-btn" href="https://supabase.com/dashboard/sign-up" target="_blank">
-            🌐 افتح صفحة التسجيل
-          </a>
-          <button class="step-done-btn" onclick="guideDone(1)">✅ سجّلت — التالي</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══ الخطوة 2: إنشاء مشروع جديد ══ -->
-    <div class="step-card" id="step-2">
-      <div class="step-head" onclick="guideToggle(2)">
-        <div class="step-num">2</div>
-        <div class="step-head-text">
-          <div class="step-title">إنشاء مشروع جديد</div>
-          <div class="step-sub">مشروعك الخاص لـ STOC</div>
-        </div>
-        <div class="step-badge">مشروع</div>
-      </div>
-      <div class="step-body">
-        <div class="visual-card">
-          <div class="visual-path">
-            <span class="vp-btn">New Project</span>
-            <span class="vp-arrow">←</span>
-            <span class="vp-field">الاسم: <strong>stoc-admin</strong></span>
-            <span class="vp-arrow">←</span>
-            <span class="vp-field">Region: <strong>Frankfurt</strong></span>
-          </div>
-          <div class="visual-tip">⏳ انتظر دقيقة حتى يظهر "Active ✅"</div>
-        </div>
-        <div class="step-actions">
-          <a class="step-open-btn" href="https://supabase.com/dashboard/new" target="_blank">
-            🌐 افتح صفحة إنشاء مشروع
-          </a>
-          <button class="step-done-btn" onclick="guideDone(2)">✅ أنشأت المشروع — التالي</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══ الخطوة 3: نسخ Anon Key ══ -->
-    <div class="step-card" id="step-3">
-      <div class="step-head" onclick="guideToggle(3)">
-        <div class="step-num">3</div>
-        <div class="step-head-text">
-          <div class="step-title">نسخ مفتاح الاتصال (Anon Key)</div>
-          <div class="step-sub">ستلصقه في إعدادات STOC</div>
-        </div>
-        <div class="step-badge">مفتاح</div>
-      </div>
-      <div class="step-body">
-        <div class="visual-card">
-          <div class="visual-path">
-            <span class="vp-btn">Project Settings</span>
-            <span class="vp-arrow">←</span>
-            <span class="vp-btn">API Keys</span>
-            <span class="vp-arrow">←</span>
-            <span class="vp-highlight">anon public → Copy</span>
-          </div>
-          <div class="visual-tip">📋 المفتاح يبدأ بـ eyJhbGci… — انسخه كاملاً</div>
-        </div>
-        <!-- حقل اللصق المباشر -->
-        <div style="margin-top:14px;">
-          <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px;">📌 الصق المفتاح هنا مباشرة:</div>
-          <textarea id="guide-anon-key" rows="3" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-            style="width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:10px;
-                   color:var(--gold);font-family:monospace;font-size:10px;padding:10px;
-                   outline:none;resize:none;direction:ltr;"
-            oninput="guideSaveKey(this.value)"></textarea>
-          <div id="guide-key-status" style="font-size:11px;margin-top:6px;color:var(--muted);min-height:18px;"></div>
-        </div>
-        <div class="step-actions">
-          <a class="step-open-btn" id="guide-api-link" href="https://supabase.com/dashboard" target="_blank">
-            🌐 افتح Project Settings → API Keys
-          </a>
-          <button class="step-done-btn" id="guide-step3-next" onclick="guideDone(3)" style="opacity:.5;pointer-events:none;">✅ نسخت المفتاح — التالي</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══ الخطوة 4: إنشاء جدول stoc_licenses ══ -->
-    <div class="step-card" id="step-4">
-      <div class="step-head" onclick="guideToggle(4)">
-        <div class="step-num">4</div>
-        <div class="step-head-text">
-          <div class="step-title">إنشاء جدول البيانات</div>
-          <div class="step-sub">انسخ → الصق → Run — خلاص</div>
-        </div>
-        <div class="step-badge">SQL</div>
-      </div>
-      <div class="step-body">
-        <div class="visual-card">
-          <div class="visual-path">
-            <span class="vp-btn">SQL Editor</span>
-            <span class="vp-arrow">←</span>
-            <span class="vp-btn">New query</span>
-            <span class="vp-arrow">←</span>
-            <span class="vp-highlight">الصق ← Run</span>
-          </div>
-        </div>
-        <div style="margin-top:12px;background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
-            <span style="font-size:10px;color:var(--muted);font-weight:800;">📄 الصق هذا في SQL Editor</span>
-            <button class="copy-btn" id="copy-sql-btn" onclick="guidecopySql()">📋 نسخ الكود</button>
-          </div>
-          <pre class="code-pre" id="guide-sql-pre" style="max-height:160px;"></pre>
-        </div>
-        <div class="step-actions">
-          <a class="step-open-btn" id="guide-sql-link" href="https://supabase.com/dashboard" target="_blank">
-            🌐 افتح SQL Editor
-          </a>
-          <button class="step-done-btn" onclick="guideDone(4)">✅ شغّلت الـ SQL — التالي</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══ الخطوة 5: إنشاء حساب Admin ══ -->
-    <div class="step-card" id="step-5">
-      <div class="step-head" onclick="guideToggle(5)">
-        <div class="step-num">5</div>
-        <div class="step-head-text">
-          <div class="step-title">إنشاء حساب المدير</div>
-          <div class="step-sub">الإيميل وكلمة السر اللي ستدخل بها</div>
-        </div>
-        <div class="step-badge">حساب</div>
-      </div>
-      <div class="step-body">
-        <div class="visual-card">
-          <div class="visual-path">
-            <span class="vp-btn">Authentication</span>
-            <span class="vp-arrow">←</span>
-            <span class="vp-btn">Users</span>
-            <span class="vp-arrow">←</span>
-            <span class="vp-btn">Add user</span>
-            <span class="vp-arrow">←</span>
-            <span class="vp-highlight">أدخل إيميل + كلمة سر</span>
-          </div>
-          <div class="visual-tip">⚠️ احفظ الإيميل وكلمة السر — ستحتاجهما للدخول</div>
-        </div>
-        <!-- حقل الإيميل للحفظ -->
-        <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
-          <input type="email" id="guide-admin-email" placeholder="admin@example.com"
-            style="background:var(--bg);border:1px solid var(--border2);border-radius:10px;
-                   color:var(--text);font-family:'Cairo',sans-serif;font-size:13px;
-                   padding:10px 14px;outline:none;width:100%;"
-            oninput="guideSaveEmail(this.value)"/>
-          <div style="font-size:10px;color:var(--muted);">📌 أدخل الإيميل هنا للحفظ — ستراه في شاشة الدخول تلقائياً</div>
-        </div>
-        <div class="step-actions">
-          <a class="step-open-btn" id="guide-auth-link" href="https://supabase.com/dashboard" target="_blank">
-            🌐 افتح Authentication → Users
-          </a>
-          <button class="step-done-btn" onclick="guideDone(5)">✅ أنشأت الحساب — التالي</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══ الخطوة 6: الدخول ══ -->
-    <div class="step-card" id="step-6">
-      <div class="step-head" onclick="guideToggle(6)">
-        <div class="step-num">6</div>
-        <div class="step-head-text">
-          <div class="step-title">ادخل إلى STOC Manager</div>
-          <div class="step-sub">كل شيء جاهز 🎉</div>
-        </div>
-        <div class="step-badge">اكتمل!</div>
-      </div>
-      <div class="step-body">
-        <div class="visual-card" style="border-color:var(--green)30;">
-          <div style="text-align:center;padding:8px 0;">
-            <div style="font-size:36px;margin-bottom:8px;">🎉</div>
-            <div style="font-size:14px;font-weight:800;color:var(--green);">الإعداد اكتمل!</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:6px;">اضغط "دخول" لتسجيل الدخول بالإيميل وكلمة السر اللي أنشأتهما</div>
-          </div>
-        </div>
-        <div class="step-actions" style="justify-content:center;">
-          <button class="step-done-btn" style="width:100%;justify-content:center;font-size:15px;padding:14px;" onclick="guideFinish()">
-            🚀 دخول إلى التطبيق
-          </button>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /guide-body -->
-</div><!-- /guide-overlay -->
-
-<canvas id="qr-canvas" style="display:none;"></canvas>
-<div id="settings-overlay" onclick="settingsClose()"></div>
-<div id="settings-drawer">
-  <div class="drawer-handle"></div>
-
-  <!-- Header -->
-  <div class="drawer-header">
-    <div class="drawer-avatar" style="background:linear-gradient(135deg,#1e3a5f,#3b82f6);">⚙️</div>
-    <div>
-      <div class="drawer-title">إعدادات التطبيق</div>
-      <div class="drawer-code">STOC Manager · Admin Config</div>
-    </div>
-    <button class="drawer-close" onclick="settingsClose()">✕</button>
-  </div>
-
-  <!-- ── القسم 1: اتصال Supabase ── -->
-  <div class="cfg-section">
-    <div class="cfg-section-title">☁️ اتصال Supabase</div>
-
-    <div class="cfg-field">
-      <label>Anon Key — يكفي هذا الحقل فقط</label>
-      <input type="text" id="cfg-anon-key"
-        placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…"
-        oninput="cfgAutoExtract()" dir="ltr"
-        style="font-family:monospace;font-size:11px;"/>
-      <span class="cfg-hint">
-        من Supabase → Project Settings → API → <strong>anon public</strong><br/>
-        سيتم استخراج الـ Project URL تلقائياً من هذا المفتاح ✨
-      </span>
-    </div>
-
-    <!-- URL مستخرج (للعرض فقط) -->
-    <div id="cfg-url-preview" style="display:none;
-      background:var(--bg);border:1px solid var(--border);
-      border-radius:10px;padding:10px 14px;margin-bottom:12px;">
-      <div style="font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:700;">
-        🔗 URL مستخرج تلقائياً
-      </div>
-      <div id="cfg-url-preview-val"
-        style="font-size:11px;color:var(--gold);font-family:monospace;word-break:break-all;direction:ltr;"></div>
-    </div>
-
-    <div class="cfg-field">
-      <label>Admin Token</label>
-      <input type="password" id="cfg-admin-token"
-        placeholder="STOC-ADMIN-…"
-        oninput="cfgResetStatus()"/>
-      <span class="cfg-hint">يجب أن يطابق ADMIN_TOKEN في Supabase → Edge Functions → Secrets</span>
-    </div>
-
-    <!-- حقل مخفي للـ URL (للتوافق مع بقية الكود) -->
-    <input type="hidden" id="cfg-sb-url"/>
-
-    <!-- حالة الاتصال -->
-    <div class="cfg-status" id="cfg-status">⏳ في انتظار الاختبار…</div>
-
-    <div class="cfg-actions">
-      <button class="cfg-btn cfg-btn-outline" onclick="cfgTest()">🔌 اختبار</button>
-      <button class="cfg-btn cfg-btn-gold"    onclick="cfgSave()">💾 حفظ</button>
-    </div>
-  </div>
-
-  <!-- ── القسم 2: حالة النظام ── -->
-  <div class="cfg-section">
-    <div class="cfg-section-title">🩺 حالة النظام</div>
-    <div id="cfg-checks">
-      <div class="cfg-check-row">
-        <span class="cfg-check-lbl">جدول stoc_licenses</span>
-        <span class="cfg-check-dot wait" id="chk-table">—</span>
-      </div>
-      <div class="cfg-check-row">
-        <span class="cfg-check-lbl">Edge Function admin-proxy</span>
-        <span class="cfg-check-dot wait" id="chk-proxy">—</span>
-      </div>
-      <div class="cfg-check-row">
-        <span class="cfg-check-lbl">Edge Function sign-license</span>
-        <span class="cfg-check-dot wait" id="chk-sign">—</span>
-      </div>
-    </div>
-    <button class="cfg-btn cfg-btn-outline" style="margin-top:12px;width:100%;"
-      onclick="cfgRunChecks()">🔄 فحص الآن</button>
-  </div>
-
-  <!-- ── القسم 3: دليل الإعداد الأولي ── -->
-  <div class="cfg-section">
-    <div class="cfg-section-title">📋 دليل الإعداد خطوة بخطوة</div>
-    <div style="font-size:12px;color:var(--muted);line-height:2;margin-bottom:12px;">
-      مشروع Supabase جديد؟ الدليل يشرح كل خطوة بروابط مباشرة وأكواد SQL جاهزة للنسخ.
-    </div>
-    <button id="open-guide-btn" onclick="guideOpen()">
-      📖 فتح دليل الإعداد الكامل
-    </button>
-  </div>
-</div>
-
 <canvas id="qr-canvas" style="display:none;"></canvas>
 <input id="lic-link-input" style="display:none;" readonly/>
 <div id="toast"></div>
 
 <script>
 // ══════════════════════════════════════════════
-//  CONFIG — يُقرأ من localStorage أولاً
+//  CONFIG
 // ══════════════════════════════════════════════
-const CFG_KEY     = "stoc-admin-cfg-v1";
-const PWA_BASE    = "https://ayad-mounir.github.io/STOC-PWA/";
-
-const _DEFAULTS = {
-  sb_url:      "https://pcjbkickwdpouphkygeq.supabase.co",
-  anon_key:    "",   // Supabase → Project Settings → API → anon public
-  admin_token: "STOC-ADMIN-CHANGE-ME-2026",
-};
-
-function loadCfg() {
-  try { return Object.assign({}, _DEFAULTS, JSON.parse(localStorage.getItem(CFG_KEY))); }
-  catch { return Object.assign({}, _DEFAULTS); }
-}
-function saveCfg(obj) {
-  localStorage.setItem(CFG_KEY, JSON.stringify(obj));
-}
-
-let _cfg        = loadCfg();
-let SB_URL      = _cfg.sb_url;
-let SIGN_URL    = SB_URL + "/functions/v1/sign-license";
-let PROXY_URL   = SB_URL + "/functions/v1/admin-proxy";
-let ADMIN_TOKEN = _cfg.admin_token;
-
-// ── Supabase Auth client (يحتاج anon_key) ──
-let _sb = null;
-function initSBClient() {
-  const cfg = loadCfg();
-  if (!cfg.sb_url || !cfg.anon_key) return null;
-  return supabase.createClient(cfg.sb_url, cfg.anon_key, {
-    auth: { persistSession: true, autoRefreshToken: true }
-  });
-}
-
-function applyCfg(cfg) {
-  _cfg        = cfg;
-  SB_URL      = cfg.sb_url;
-  SIGN_URL    = SB_URL + "/functions/v1/sign-license";
-  PROXY_URL   = SB_URL + "/functions/v1/admin-proxy";
-  ADMIN_TOKEN = cfg.admin_token;
-  _sb         = initSBClient();   // أعد تهيئة الـ client بالبيانات الجديدة
-}
+const SECRET   = "Mounir2026";
+const SB_URL   = "https://pcjbkickwdpouphkygeq.supabase.co";
+const SB_KEY   = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjamJraWNrd2Rwb3VwaGt5Z2VxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTAxNjI1NiwiZXhwIjoyMDk0NTkyMjU2fQ.cnvbQe4zm6G5pKJ9tFO388FQ_BBoXEulGgxdFq5ra3E";
+const LOCK_KEY = "stoc-admin-lock-v1";
+const PWA_BASE = "https://ayad-mounir.github.io/STOC-PWA/";
 
 // ══════════════════════════════════════════════
 //  INSTALL
@@ -1692,77 +1038,46 @@ async function installApp() {
 }
 
 // ══════════════════════════════════════════════
-//  AUTH — Supabase Auth (بدلاً من localStorage)
+//  LOCK SCREEN
 // ══════════════════════════════════════════════
-
-function _lockState(state) {
-  // state: 'checking' | 'no-config' | 'login' | 'error'
-  document.getElementById("lock-checking").style.display = state === "checking" ? "block" : "none";
-  document.getElementById("lock-setup-msg").style.display = state === "no-config" ? "block" : "none";
-  document.getElementById("lock-form").style.display      = (state === "login" || state === "error") ? "block" : "none";
+async function hashPass(pass) {
+  const buf = await crypto.subtle.digest("SHA-256",
+    new TextEncoder().encode(pass + "STOC-ADMIN-SALT"));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
 }
 
-async function initAuth() {
-  _sb = initSBClient();
-
-  // لا يوجد إعداد — عرض رسالة الإعداد المطلوب
-  if (!_sb) {
-    document.getElementById("lock-sub").textContent = "يجب إعداد Supabase أولاً";
-    _lockState("no-config");
-    return;
+async function initLockScreen() {
+  const stored = localStorage.getItem(LOCK_KEY);
+  if (!stored) {
+    document.getElementById("lock-sub").textContent = "اختر كلمة سر للتطبيق";
+    document.getElementById("lock-first").style.display = "block";
   }
-
-  _lockState("checking");
-  document.getElementById("lock-sub").textContent = "جارٍ التحقق من الجلسة…";
-
-  try {
-    const { data: { session } } = await _sb.auth.getSession();
-    if (session) { openApp(); return; }
-  } catch (e) { /* session check failed — show login */ }
-
-  document.getElementById("lock-sub").textContent = "تسجيل دخول المدير";
-  _lockState("login");
-  document.getElementById("lock-email").focus();
+  document.getElementById("lock-input").focus();
 }
 
 async function unlockApp() {
-  if (!_sb) { settingsOpen(); return; }
-
-  const email = document.getElementById("lock-email").value.trim();
   const pass  = document.getElementById("lock-input").value;
+  const input = document.getElementById("lock-input");
   const errEl = document.getElementById("lock-err");
-  const btn   = document.querySelector(".lock-btn");
-
-  errEl.textContent = "";
-  if (!email || !pass) {
-    errEl.textContent = "⚠️ أدخل الإيميل وكلمة السر";
-    return;
+  if (!pass || pass.length < 4) {
+    errEl.textContent = "⚠️ كلمة السر قصيرة جداً (4 أحرف على الأقل)";
+    input.classList.add("err");
+    setTimeout(() => input.classList.remove("err"), 500); return;
   }
-
-  btn.textContent = "⏳ جارٍ الدخول…";
-  btn.disabled    = true;
-
-  const { error } = await _sb.auth.signInWithPassword({ email, password: pass });
-
-  btn.textContent = "🔓 دخول";
-  btn.disabled    = false;
-
-  if (error) {
-    errEl.textContent = error.message.includes("Invalid") || error.message.includes("credentials")
-      ? "❌ الإيميل أو كلمة السر غير صحيحة"
-      : "❌ " + error.message;
-    document.getElementById("lock-input").value = "";
-    document.getElementById("lock-input").classList.add("err");
-    setTimeout(() => document.getElementById("lock-input").classList.remove("err"), 500);
-    return;
+  const hash   = await hashPass(pass);
+  const stored = localStorage.getItem(LOCK_KEY);
+  if (!stored) {
+    localStorage.setItem(LOCK_KEY, hash);
+    errEl.textContent = "";
+    openApp();
+  } else if (hash === stored) {
+    errEl.textContent = ""; openApp();
+  } else {
+    errEl.textContent = "❌ كلمة السر غير صحيحة";
+    input.value = "";
+    input.classList.add("err");
+    setTimeout(() => input.classList.remove("err"), 500);
   }
-  openApp();
-}
-
-async function signOutAdmin() {
-  if (_sb) await _sb.auth.signOut();
-  // إعادة تحميل الصفحة لمسح كل الحالة
-  window.location.reload();
 }
 
 function openApp() {
@@ -1772,39 +1087,17 @@ function openApp() {
   setTimeout(() => { ls.style.display = "none"; checkAdminDB(); renderList(); }, 320);
 }
 
-window.addEventListener("DOMContentLoaded", () => initAuth());
+window.addEventListener("DOMContentLoaded", () => initLockScreen());
 
 // ══════════════════════════════════════════════
-//  ADMIN PROXY — بوابة آمنة بدلاً من Supabase مباشرة
+//  SUPABASE
 // ══════════════════════════════════════════════
+let sb = null;
 let _cache = [];
 
-/**
- * adminAPI — يرسل الطلبات لـ Edge Function بدلاً من الاتصال بـ Supabase مباشرة.
- * @param {string} action  - اسم العملية (list, insert, freeze, delete, ...)
- * @param {object|null} body - البيانات المرسلة (null للـ GET)
- */
-async function adminAPI(action, body = null) {
-  try {
-    const isGet = body === null;
-    const opts  = {
-      method:  isGet ? "GET" : "POST",
-      headers: {
-        "Content-Type":  "application/json",
-        "X-Admin-Token": ADMIN_TOKEN,
-      },
-    };
-    const url = isGet ? PROXY_URL + "?action=" + action : PROXY_URL;
-    if (!isGet) opts.body = JSON.stringify({ action, ...body });
-    const res  = await fetch(url, opts);
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: "HTTP " + res.status }));
-      return { data: null, error: err };
-    }
-    return await res.json();
-  } catch (e) {
-    return { data: null, error: { message: e.message || "Network error" } };
-  }
+function initSB() {
+  if (sb) return;
+  sb = window.supabase.createClient(SB_URL, SB_KEY);
 }
 
 function setSBStatus(ok, msg) {
@@ -1816,18 +1109,9 @@ function setSBStatus(ok, msg) {
 }
 
 async function sign(payload) {
-  const res = await fetch(SIGN_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Admin-Token": ADMIN_TOKEN,
-    },
-    body: JSON.stringify({ action: "sign", payload })
-  });
-  if (!res.ok) throw new Error("فشل توليد التوقيع — تحقق من الاتصال");
-  const { sig } = await res.json();
-  if (!sig) throw new Error("الـ Edge Function لم تُعد توقيعاً صالحاً");
-  return sig;
+  const msg = JSON.stringify(payload) + SECRET;
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("").slice(0,32);
 }
 
 function genCode(company) {
@@ -1847,7 +1131,8 @@ function withTimeout(promise, ms) {
 //  DATA
 // ══════════════════════════════════════════════
 async function loadCompanies() {
-  const { data, error } = await adminAPI("list");
+  initSB();
+  const { data, error } = await sb.from("stoc_licenses").select("*").order("created_at",{ascending:false});
   if (error) { setSBStatus(false, "خطأ في الاتصال"); console.error(error); return []; }
   setSBStatus(true, "متصل");
   _cache = data || [];
@@ -2026,11 +1311,14 @@ async function setCustomDate() {
 async function updateExpiry(newExpiry) {
   const c = _cache.find(x => x.code === _drCode);
   if (!c) return;
+  initSB();
   // إعادة حساب التوقيع بالبيانات الجديدة
   const newPayload = { company: c.company, url: c.sb_url||"", key: c.sb_key||"",
     expires: newExpiry||"", devices: c.devices, code: c.code, v:1 };
   const newSig = await sign(newPayload);
-  const { error } = await adminAPI("update_expiry", { code: _drCode, expires: newExpiry, sig: newSig });
+  const { error } = await sb.from("stoc_licenses")
+    .update({ expires: newExpiry, sig: newSig })
+    .eq("code", _drCode);
   if (error) { toast("❌ خطأ: " + error.message); return; }
   const label = newExpiry ? `📅 تم التمديد حتى ${newExpiry}` : "♾️ تم التحويل إلى دائم";
   toast(label);
@@ -2050,11 +1338,14 @@ async function saveDevices() {
   const c = _cache.find(x => x.code === _drCode);
   if (!c) return;
   const devices = parseInt(document.getElementById("dr-devices").value) || 5;
+  initSB();
   // إعادة حساب التوقيع بالبيانات الجديدة
   const newPayload = { company: c.company, url: c.sb_url||"", key: c.sb_key||"",
     expires: c.expires||"", devices: devices, code: c.code, v:1 };
   const newSig = await sign(newPayload);
-  const { error } = await adminAPI("update_devices", { code: _drCode, devices, sig: newSig });
+  const { error } = await sb.from("stoc_licenses")
+    .update({ devices, sig: newSig })
+    .eq("code", _drCode);
   if (error) { toast("❌ خطأ: " + error.message); return; }
   toast(`✅ تم الحفظ — ${devices} أجهزة`);
   await loadCompanies();
@@ -2066,7 +1357,10 @@ async function saveDevices() {
 async function drToggleFreeze() {
   const c = _cache.find(x => x.code === _drCode);
   if (!c) return;
-  const { error } = await adminAPI("freeze", { code: _drCode, frozen: !c.frozen });
+  initSB();
+  const { error } = await sb.from("stoc_licenses")
+    .update({ frozen: !c.frozen })
+    .eq("code", _drCode);
   if (error) { toast("❌ خطأ: " + error.message); return; }
   toast(c.frozen ? "✅ تم تفعيل الشركة" : "🔒 تم تجميد الشركة");
   await loadCompanies();
@@ -2079,7 +1373,8 @@ async function drDelete() {
   const c = _cache.find(x => x.code === _drCode);
   if (!c) return;
   if (!confirm(`هل أنت متأكد من حذف "${c.company}" نهائياً؟\nلا يمكن التراجع عن هذه العملية.`)) return;
-  const { error } = await adminAPI("delete", { code: _drCode });
+  initSB();
+  const { error } = await sb.from("stoc_licenses").delete().eq("code", _drCode);
   if (error) { toast("❌ خطأ في الحذف: " + error.message); return; }
   toast("🗑️ تم الحذف نهائياً");
   closeDrawer();
@@ -2122,7 +1417,8 @@ async function buildPayloadFresh(c) {
   const newSig = await sign(data);
   // حفظ الـ sig الجديد في DB إذا تغيّر
   if (newSig !== c.sig) {
-    await adminAPI("update_sig", { code: c.code, sig: newSig });
+    initSB();
+    await sb.from("stoc_licenses").update({ sig: newSig }).eq("code", c.code);
     c.sig = newSig; // تحديث الكاش المحلي
   }
   return { ...data, sig: newSig };
@@ -2193,7 +1489,8 @@ async function renderQR(link, canvasId, imgId, loadingId) {
 // ══════════════════════════════════════════════
 async function checkAdminDB() {
   try {
-    const { error } = await adminAPI("check");
+    initSB();
+    const { error } = await sb.from("stoc_licenses").select("id").limit(1);
     if (error && (error.code === "42P01" || error.message?.includes("does not exist"))) {
       document.getElementById("admin-setup-banner").style.display = "block";
     }
@@ -2394,8 +1691,9 @@ async function wizGenerate() {
   _lastPayload = payload;
 
   try {
+    initSB();
     const { error } = await withTimeout(
-      adminAPI("insert", {
+      sb.from("stoc_licenses").insert({
         company, code, sb_url: url, sb_key: key,
         expires: expires || null, devices, frozen: false, note: note || null, sig
       }), 10000
@@ -2472,462 +1770,6 @@ function wizCopySql() {
 // ══════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════
-// ══════════════════════════════════════════════
-//  SETTINGS DRAWER
-// ══════════════════════════════════════════════
-// ══════════════════════════════════════════════
-//  SETUP GUIDE
-// ══════════════════════════════════════════════
-const GUIDE_PROGRESS_KEY = "stoc-guide-progress-v1";
-
-const GUIDE_SQL = `CREATE TABLE IF NOT EXISTS stoc_licenses (
-  id         BIGSERIAL PRIMARY KEY,
-  company    TEXT NOT NULL,
-  code       TEXT NOT NULL UNIQUE,
-  sb_url     TEXT,
-  sb_key     TEXT,
-  expires    DATE,
-  devices    INT DEFAULT 5,
-  frozen     BOOLEAN DEFAULT FALSE,
-  note       TEXT,
-  sig        TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-ALTER TABLE stoc_licenses ENABLE ROW LEVEL SECURITY;
-
-GRANT SELECT ON stoc_licenses TO anon;
-GRANT SELECT ON stoc_licenses TO authenticated;
-
-CREATE POLICY "anon_read_only" ON stoc_licenses
-  FOR SELECT TO anon USING (true);
-CREATE POLICY "admin_full_access" ON stoc_licenses
-  FOR ALL TO authenticated USING (true) WITH CHECK (true);`;
-
-const GUIDE_FN = `import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const CORS = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, X-Admin-Token",
-};
-
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...CORS, "Content-Type": "application/json" },
-  });
-}
-
-async function computeSig(payload) {
-  const secret = Deno.env.get("LICENSE_SECRET") ?? "";
-  const msg    = JSON.stringify(payload) + secret;
-  const buf    = await crypto.subtle.digest("SHA-256",
-    new TextEncoder().encode(msg));
-  return Array.from(new Uint8Array(buf))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("").slice(0, 32);
-}
-
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
-  if (req.method !== "POST") return json({ error: "method not allowed" }, 405);
-
-  let body;
-  try { body = await req.json(); }
-  catch { return json({ error: "invalid JSON" }, 400); }
-
-  const action = body.action;
-
-  if (action === "sign") {
-    const adminToken = Deno.env.get("ADMIN_TOKEN") ?? "";
-    const sentToken  = req.headers.get("X-Admin-Token") ?? "";
-    if (!adminToken || sentToken !== adminToken)
-      return json({ error: "unauthorized" }, 401);
-    const sig = await computeSig(body.payload);
-    return json({ sig });
-  }
-
-  if (action === "verify") {
-    const { sig, ...data } = body.payload ?? {};
-    const computed = await computeSig(data);
-    return json({ valid: computed === (body.sig ?? sig) });
-  }
-
-  return json({ error: "action unknown" }, 400);
-});`;
-
-let _guideProgress = [];
-try { _guideProgress = JSON.parse(localStorage.getItem(GUIDE_PROGRESS_KEY)) || []; } catch {}
-
-const GUIDE_STEPS = [1, 2, 3, 4, 5, 6];
-
-function guideOpen() {
-  settingsClose();
-  document.getElementById("guide-sql-pre").textContent = GUIDE_SQL;
-
-  // استعادة المدخلات المحفوظة
-  const saved = loadCfg();
-  if (saved.anon_key) {
-    document.getElementById("guide-anon-key").value = saved.anon_key;
-    _guideKeyValid(saved.anon_key);
-  }
-  const savedEmail = localStorage.getItem("stoc-guide-email") || "";
-  if (savedEmail) document.getElementById("guide-admin-email").value = savedEmail;
-
-  _guideProgress.forEach(n => {
-    const card = document.getElementById("step-" + n);
-    if (card) { card.classList.add("done"); card.classList.remove("active"); }
-  });
-  const nextStep = GUIDE_STEPS.find(n => !_guideProgress.includes(n)) || 6;
-  _activateStep(nextStep);
-  _guideUpdateProgress();
-  document.getElementById("guide-overlay").classList.add("open");
-  document.body.style.overflow = "hidden";
-}
-
-function guideClose() {
-  document.getElementById("guide-overlay").classList.remove("open");
-  document.body.style.overflow = "";
-  settingsOpen();
-}
-
-function guideToggle(n) {
-  const card = document.getElementById("step-" + n);
-  if (card && card.classList.contains("active")) return;
-  _activateStep(n);
-}
-
-function _activateStep(n) {
-  GUIDE_STEPS.forEach(i => {
-    const c = document.getElementById("step-" + i);
-    if (c) c.classList.remove("active");
-  });
-  const target = document.getElementById("step-" + n);
-  if (target) {
-    target.classList.add("active");
-    setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
-  }
-}
-
-function _guideUpdateProgress() {
-  const done = _guideProgress.length;
-  const total = GUIDE_STEPS.length;
-  const pct = Math.round((done / total) * 100);
-  const bar = document.getElementById("guide-progress-bar");
-  const sub = document.getElementById("guide-progress-sub");
-  if (bar) bar.style.width = Math.max(pct, 8) + "%";
-  if (sub) sub.textContent = done >= total ? "✅ اكتمل الإعداد!" : `الخطوة ${done + 1} من ${total}`;
-}
-
-// حفظ الـ Anon Key مباشرة من الدليل
-function guideSaveKey(val) {
-  _guideKeyValid(val.trim());
-}
-
-function _guideKeyValid(key) {
-  const status = document.getElementById("guide-key-status");
-  const nextBtn = document.getElementById("guide-step3-next");
-  if (!key || !key.startsWith("eyJ") || key.split(".").length !== 3) {
-    if (status) { status.textContent = key ? "❌ المفتاح غير صحيح — يجب أن يبدأ بـ eyJ" ; status.style.color = "var(--red)"; }
-    if (nextBtn) { nextBtn.style.opacity = ".5"; nextBtn.style.pointerEvents = "none"; }
-    return false;
-  }
-  // استخراج URL وحفظ الكل
-  const url = extractUrlFromJWT(key);
-  if (url) {
-    // تحديث روابط الدليل بالمشروع الصحيح
-    const projectId = url.replace("https://","").replace(".supabase.co","");
-    const base = `https://supabase.com/dashboard/project/${projectId}`;
-    const apiLink  = document.getElementById("guide-api-link");
-    const sqlLink  = document.getElementById("guide-sql-link");
-    const authLink = document.getElementById("guide-auth-link");
-    if (apiLink)  apiLink.href  = base + "/settings/api";
-    if (sqlLink)  sqlLink.href  = base + "/sql/new";
-    if (authLink) authLink.href = base + "/auth/users";
-
-    // حفظ في الإعدادات تلقائياً
-    const cfg = loadCfg();
-    cfg.anon_key = key;
-    cfg.sb_url   = url;
-    saveCfg(cfg);
-    document.getElementById("cfg-sb-url").value   = url;
-    document.getElementById("cfg-anon-key").value = key;
-
-    if (status) {
-      status.textContent = "✅ تم — URL مستخرج: " + url;
-      status.style.color = "var(--green)";
-    }
-    if (nextBtn) { nextBtn.style.opacity = "1"; nextBtn.style.pointerEvents = "auto"; }
-    return true;
-  }
-  if (status) { status.textContent = "⚠️ مفتاح صحيح لكن تعذّر استخراج الـ URL"; status.style.color = "var(--gold)"; }
-  if (nextBtn) { nextBtn.style.opacity = "1"; nextBtn.style.pointerEvents = "auto"; }
-  return true;
-}
-
-// حفظ إيميل المدير
-function guideSaveEmail(val) {
-  localStorage.setItem("stoc-guide-email", val.trim());
-  // تعبئة حقل الإيميل في شاشة الدخول مسبقاً
-  const lockEmail = document.getElementById("lock-email");
-  if (lockEmail) lockEmail.value = val.trim();
-}
-
-function guideDone(n) {
-  // تحقق من الخطوة 3 — لا تكمل إذا المفتاح فارغ
-  if (n === 3) {
-    const key = document.getElementById("guide-anon-key").value.trim();
-    if (!_guideKeyValid(key)) return;
-  }
-  const card = document.getElementById("step-" + n);
-  if (!card) return;
-  card.classList.remove("active");
-  card.classList.add("done");
-  const badge = card.querySelector(".step-badge");
-  if (badge) badge.textContent = "✅ تم";
-  if (!_guideProgress.includes(n)) {
-    _guideProgress.push(n);
-    localStorage.setItem(GUIDE_PROGRESS_KEY, JSON.stringify(_guideProgress));
-  }
-  _guideUpdateProgress();
-  const next = GUIDE_STEPS.find(i => !_guideProgress.includes(i));
-  if (next) _activateStep(next);
-  else _activateStep(6);
-}
-
-function guideFinish() {
-  _guideProgress = [...GUIDE_STEPS];
-  localStorage.setItem(GUIDE_PROGRESS_KEY, JSON.stringify(_guideProgress));
-  GUIDE_STEPS.forEach(n => {
-    const c = document.getElementById("step-" + n);
-    if (c) { c.classList.add("done"); c.classList.remove("active"); }
-  });
-  document.getElementById("guide-overlay").classList.remove("open");
-  document.body.style.overflow = "";
-  // أعد تهيئة الاتصال بالإعدادات المحفوظة
-  const cfg = loadCfg();
-  if (cfg.anon_key) {
-    applyCfg(cfg);
-    initAuth();
-  } else {
-    toast("⚠️ أدخل الـ Anon Key في الخطوة 3 أولاً");
-    guideOpen();
-  }
-}
-
-function guidecopySql() {
-  copyText(GUIDE_SQL, document.getElementById("copy-sql-btn"));
-}
-function copyText(text, btn) {
-  navigator.clipboard.writeText(text).then(() => {
-    if (!btn) return;
-    const orig = btn.textContent;
-    btn.textContent = "✅ تم النسخ";
-    btn.classList.add("copied");
-    setTimeout(() => { btn.textContent = orig; btn.classList.remove("copied"); }, 2000);
-  }).catch(() => toast("تعذّر النسخ — جرّب يدوياً"));
-}
-
-function settingsOpen() {
-  const cfg = loadCfg();
-  document.getElementById("cfg-sb-url").value      = cfg.sb_url;
-  document.getElementById("cfg-anon-key").value    = cfg.anon_key || "";
-  document.getElementById("cfg-admin-token").value = cfg.admin_token;
-  cfgResetStatus();
-  // اعرض الـ URL المستخرج إذا كان الـ anon_key موجوداً
-  if (cfg.anon_key) cfgAutoExtract();
-  document.getElementById("settings-overlay").classList.add("open");
-  document.getElementById("settings-drawer").classList.add("open");
-  document.body.style.overflow = "hidden";
-  // فحص تلقائي عند الفتح
-  cfgRunChecks();
-}
-
-function settingsClose() {
-  document.getElementById("settings-overlay").classList.remove("open");
-  document.getElementById("settings-drawer").classList.remove("open");
-  document.body.style.overflow = "";
-}
-
-function cfgResetStatus() {
-  const el = document.getElementById("cfg-status");
-  el.textContent = "⏳ في انتظار الاختبار…";
-  el.style.color = "var(--muted)";
-  el.style.borderColor = "var(--border)";
-}
-
-// ── استخراج URL تلقائياً من الـ Anon Key (JWT) ──
-function extractUrlFromJWT(anonKey) {
-  try {
-    const payload = JSON.parse(atob(anonKey.split(".")[1]));
-    // الـ ref هو subdomain الـ Supabase project: payload.ref أو من iss
-    const ref = payload.ref || (payload.iss && payload.iss.match(/https:\/\/([\w-]+)\.supabase\.co/)?.[1]);
-    if (ref) return "https://" + ref + ".supabase.co";
-  } catch {}
-  return null;
-}
-
-function cfgAutoExtract() {
-  cfgResetStatus();
-  const anonKey = document.getElementById("cfg-anon-key").value.trim();
-  const preview = document.getElementById("cfg-url-preview");
-  const previewVal = document.getElementById("cfg-url-preview-val");
-  const urlInput = document.getElementById("cfg-sb-url");
-
-  if (anonKey.startsWith("eyJ") && anonKey.split(".").length === 3) {
-    const url = extractUrlFromJWT(anonKey);
-    if (url) {
-      urlInput.value = url;
-      previewVal.textContent = url;
-      preview.style.display = "block";
-      preview.style.borderColor = "var(--green)";
-      return;
-    }
-  }
-  urlInput.value = "";
-  preview.style.display = "none";
-}
-
-async function cfgTest() {
-  const url   = document.getElementById("cfg-sb-url").value.trim().replace(/\/+$/, "");
-  const token = document.getElementById("cfg-admin-token").value.trim();
-  const el    = document.getElementById("cfg-status");
-
-  if (!url || !url.startsWith("https://")) {
-    el.textContent = "❌ الـ URL غير صحيح — يجب أن يبدأ بـ https://";
-    el.style.color = "var(--red)"; return;
-  }
-  if (!token) {
-    el.textContent = "❌ أدخل Admin Token";
-    el.style.color = "var(--red)"; return;
-  }
-
-  el.textContent = "⏳ جارٍ الاتصال…";
-  el.style.color = "var(--muted)";
-
-  try {
-    // اختبار عبر admin-proxy
-    const res = await withTimeout(fetch(url + "/functions/v1/admin-proxy?action=check", {
-      headers: { "X-Admin-Token": token }
-    }), 8000);
-
-    if (res.status === 401) {
-      el.textContent = "❌ Admin Token غير صحيح";
-      el.style.color = "var(--red)";
-      document.getElementById("cfg-admin-token").classList.add("err");
-      return;
-    }
-    if (res.ok || res.status === 404) {
-      el.textContent = "🟢 الاتصال ناجح — يمكنك الحفظ";
-      el.style.color = "var(--green)";
-      document.getElementById("cfg-sb-url").classList.remove("err");
-      document.getElementById("cfg-sb-url").classList.add("ok");
-      document.getElementById("cfg-admin-token").classList.remove("err");
-      document.getElementById("cfg-admin-token").classList.add("ok");
-    } else {
-      el.textContent = "⚠️ استجابة غير متوقعة: HTTP " + res.status;
-      el.style.color = "var(--gold)";
-    }
-  } catch(e) {
-    el.textContent = "❌ تعذّر الاتصال — تأكد من الـ URL";
-    el.style.color = "var(--red)";
-    document.getElementById("cfg-sb-url").classList.add("err");
-  }
-}
-
-async function cfgSave() {
-  const anonKey  = document.getElementById("cfg-anon-key").value.trim();
-  const token    = document.getElementById("cfg-admin-token").value.trim();
-  const el       = document.getElementById("cfg-status");
-
-  if (!anonKey || !anonKey.startsWith("eyJ")) {
-    el.textContent = "❌ Anon Key غير صحيح — يجب أن يبدأ بـ eyJ";
-    el.style.color = "var(--red)"; return;
-  }
-
-  // استخراج URL تلقائياً
-  const url = extractUrlFromJWT(anonKey);
-  if (!url) {
-    el.textContent = "❌ تعذّر استخراج الـ URL من الـ Anon Key — تأكد أنه صحيح";
-    el.style.color = "var(--red)"; return;
-  }
-  document.getElementById("cfg-sb-url").value = url;
-
-  if (!token) {
-    el.textContent = "❌ Admin Token مطلوب";
-    el.style.color = "var(--red)"; return;
-  }
-
-  const newCfg = { sb_url: url, anon_key: anonKey, admin_token: token };
-  saveCfg(newCfg);
-  applyCfg(newCfg);   // يُعيد تهيئة _sb تلقائياً
-
-  el.textContent = "✅ تم الحفظ — جارٍ إعادة الاتصال…";
-  el.style.color = "var(--green)";
-
-  setTimeout(async () => {
-    settingsClose();
-    toast("✅ تم حفظ إعدادات Supabase");
-    setSBStatus(false, "جارٍ إعادة الاتصال…");
-    const list = await loadCompanies();
-    updateStats(list);
-    renderList(document.getElementById("search-input").value);
-    checkAdminDB();
-  }, 600);
-}
-
-async function cfgRunChecks() {
-  const url   = (document.getElementById("cfg-sb-url").value.trim().replace(/\/+$/, "")) || SB_URL;
-  const token = (document.getElementById("cfg-admin-token").value.trim()) || ADMIN_TOKEN;
-
-  const setChk = (id, state, label) => {
-    const el = document.getElementById(id);
-    el.className = "cfg-check-dot " + state;
-    el.textContent = label;
-  };
-
-  setChk("chk-table", "wait", "⏳");
-  setChk("chk-proxy", "wait", "⏳");
-  setChk("chk-sign",  "wait", "⏳");
-
-  // فحص admin-proxy + جدول
-  try {
-    const r = await withTimeout(fetch(url + "/functions/v1/admin-proxy?action=check", {
-      headers: { "X-Admin-Token": token }
-    }), 6000);
-    if (r.status === 401) {
-      setChk("chk-proxy", "err", "❌ Token خاطئ");
-      setChk("chk-table", "err", "—");
-    } else if (r.ok) {
-      setChk("chk-proxy", "ok", "✅ يعمل");
-      const data = await r.json().catch(() => ({}));
-      setChk("chk-table", data.table_exists !== false ? "ok" : "err",
-             data.table_exists !== false ? "✅ موجود" : "❌ غير موجود");
-    } else {
-      setChk("chk-proxy", "err", "❌ " + r.status);
-      setChk("chk-table", "wait", "—");
-    }
-  } catch {
-    setChk("chk-proxy", "err", "❌ لا اتصال");
-    setChk("chk-table", "wait", "—");
-  }
-
-  // فحص sign-license
-  try {
-    const r = await withTimeout(fetch(url + "/functions/v1/sign-license", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "ping" })
-    }), 6000);
-    // أي رد حتى لو 400 يعني الـ function شغّالة
-    setChk("chk-sign", r.status < 500 ? "ok" : "err",
-           r.status < 500 ? "✅ يعمل" : "❌ خطأ " + r.status);
-  } catch {
-    setChk("chk-sign", "err", "❌ لا اتصال");
-  }
-}
-
 window.addEventListener("DOMContentLoaded", () => {
   initLockScreen();
 });
