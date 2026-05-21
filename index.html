@@ -666,8 +666,12 @@ input::placeholder{color:var(--muted);}
   frozen     BOOLEAN DEFAULT FALSE,
   note       TEXT,
   sig        TEXT,
+  last_ping  TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- إضافة عمود last_ping للجداول الموجودة (تشغيل مرة واحدة فقط)
+ALTER TABLE stoc_licenses ADD COLUMN IF NOT EXISTS last_ping TIMESTAMPTZ;
 
 ALTER TABLE stoc_licenses ENABLE ROW LEVEL SECURITY;
 
@@ -702,6 +706,25 @@ CREATE POLICY "admin_full_access" ON stoc_licenses
     <div class="stat-card">
       <div class="stat-num" style="color:var(--orange)" id="stat-expiring">0</div>
       <div class="stat-lbl">تنتهي قريباً</div>
+    </div>
+  </div>
+
+  <!-- Heartbeat Stats -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:12px 16px;background:#0d1117;border:1px solid #30363d;border-radius:12px;gap:12px;">
+    <div style="display:flex;align-items:center;gap:10px;flex:1;">
+      <span style="font-size:20px;">🏓</span>
+      <div>
+        <div style="color:#e6edf3;font-weight:700;font-size:12px;">Heartbeat — منع توقف Supabase</div>
+        <div style="color:#6b7280;font-size:10px;margin-top:2px;">يُرسل ping لكل شركة كل 5 أيام — يمنع التوقف التلقائي بعد 7 أيام</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <span id="hb-summary" style="font-size:10px;color:#6b7280;">—</span>
+      <button onclick="pingAll()"
+        style="padding:8px 14px;background:linear-gradient(135deg,#065f46,#059669);color:#fff;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-weight:700;font-size:11px;cursor:pointer;white-space:nowrap;"
+        id="ping-all-btn">
+        🏓 Ping الكل
+      </button>
     </div>
   </div>
 
@@ -783,8 +806,17 @@ CREATE POLICY "admin_full_access" ON stoc_licenses
       <div class="action-grid">
         <button class="action-btn" onclick="drQR()">📱 عرض QR</button>
         <button class="action-btn" onclick="drCopyLink()">🔗 نسخ الرابط</button>
+        <button class="action-btn" id="dr-ping-btn" onclick="drPing()" style="border-color:#05966930;color:#10b981;">🏓 Ping</button>
         <button class="action-btn" id="dr-freeze-btn" onclick="drToggleFreeze()">🔒 تجميد</button>
         <button class="action-btn delete-btn" onclick="drDelete()">🗑️ حذف نهائي</button>
+      </div>
+    </div>
+
+    <!-- Heartbeat -->
+    <div class="drawer-section">
+      <div class="drawer-section-title">🏓 Heartbeat Supabase</div>
+      <div id="dr-ping-info" style="padding:10px 12px;background:#0d1117;border:1px solid #30363d;border-radius:10px;font-size:11px;color:#8b949e;line-height:1.7;">
+        —
       </div>
     </div>
 
@@ -1084,7 +1116,7 @@ function openApp() {
   const ls = document.getElementById("lock-screen");
   ls.style.transition = "opacity 0.3s";
   ls.style.opacity = "0";
-  setTimeout(() => { ls.style.display = "none"; checkAdminDB(); renderList(); }, 320);
+  setTimeout(() => { ls.style.display = "none"; checkAdminDB(); renderList().then(() => { setTimeout(autoPingStale, 2000); }); }, 320);
 }
 
 window.addEventListener("DOMContentLoaded", () => initLockScreen());
@@ -1130,6 +1162,162 @@ function withTimeout(promise, ms) {
 // ══════════════════════════════════════════════
 //  DATA
 // ══════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════════
+//  HEARTBEAT — منع توقف Supabase بعد 7 أيام
+// ══════════════════════════════════════════════════════════════
+
+/* ── مساعدات عرض حالة الـ ping ── */
+function pingStatusChip(lastPing) {
+  if (!lastPing) return '<span class="meta-chip" style="border-color:#78350f40;color:#d97706;">⚠️ لم يُرسل ping</span>';
+  var now  = Date.now();
+  var last = new Date(lastPing).getTime();
+  var days = Math.floor((now - last) / 86400000);
+  if (days < 3) return '<span class="meta-chip" style="border-color:#16653440;color:#4ade80;">🏓 ' + days + ' أيام</span>';
+  if (days < 6) return '<span class="meta-chip" style="border-color:#92400e40;color:#fbbf24;">🏓 ' + days + ' أيام</span>';
+  return '<span class="meta-chip" style="border-color:#7f1d1d40;color:#f87171;">🚨 ' + days + ' أيام!</span>';
+}
+
+function pingInfoText(lastPing) {
+  if (!lastPing) return '⚠️ لم يُرسل ping بعد — اضغط Ping للتفعيل';
+  var now  = Date.now();
+  var last = new Date(lastPing).getTime();
+  var days = Math.floor((now - last) / 86400000);
+  var hours = Math.floor(((now - last) % 86400000) / 3600000);
+  var when = days === 0 ? 'اليوم' : 'منذ ' + days + ' يوم' + (hours > 0 ? ' و' + hours + ' ساعة' : '');
+  var risk = days >= 6 ? '🚨 خطر! يجب ping الآن!' : days >= 4 ? '⚠️ قريب من الحد — ping موصى' : '✅ آمن';
+  return risk + '\nآخر ping: ' + when + ' (' + new Date(lastPing).toLocaleString('ar-MA') + ')\nالحد الأقصى قبل التوقف: 7 أيام';
+}
+
+/* ── ping شركة واحدة ── */
+async function pingCompany(code, silent = false) {
+  var c = _cache.find(x => x.code === code);
+  if (!c) return { ok: false, error: 'الشركة غير موجودة' };
+  if (!c.sb_url || !c.sb_key) return { ok: false, error: 'لا يوجد Supabase URL أو key' };
+  if (c.frozen) return { ok: false, error: 'الشركة مجمّدة — ping متوقف' };
+
+  try {
+    // إنشاء client مؤقت لـ Supabase الخاص بالشركة
+    var clientSB = window.supabase.createClient(c.sb_url, c.sb_key, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+
+    // ping بسيط: SELECT على stk_data (يكفي لإيقاظ Supabase)
+    var res = await Promise.race([
+      clientSB.from('stk_data').select('updated_at').limit(1),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000))
+    ]);
+
+    if (res.error && res.error.code !== 'PGRST116' && !res.error.message?.includes('does not exist')) {
+      throw new Error(res.error.message);
+    }
+
+    // تحديث last_ping في admin DB
+    var now = new Date().toISOString();
+    initSB();
+    await sb.from('stoc_licenses').update({ last_ping: now }).eq('code', code);
+
+    // تحديث الـ cache محلياً
+    var idx = _cache.findIndex(x => x.code === code);
+    if (idx >= 0) _cache[idx].last_ping = now;
+
+    if (!silent) toast('✅ Ping ناجح — ' + c.company);
+    return { ok: true };
+
+  } catch(e) {
+    var msg = e.message === 'timeout' ? 'انتهت المهلة (8 ثانية) — قد يكون المشروع متوقفاً' : e.message;
+    if (!silent) toast('❌ ' + c.company + ': ' + msg);
+    return { ok: false, error: msg };
+  }
+}
+
+/* ── ping جميع الشركات ── */
+async function pingAll() {
+  var btn = document.getElementById('ping-all-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ جارٍ...';
+
+  var active = _cache.filter(c => !c.frozen && c.sb_url && c.sb_key);
+  if (!active.length) {
+    toast('⚠️ لا توجد شركات نشطة مع Supabase');
+    btn.disabled = false;
+    btn.textContent = '🏓 Ping الكل';
+    return;
+  }
+
+  var ok = 0, fail = 0;
+  document.getElementById('hb-summary').textContent = '0/' + active.length;
+
+  for (var i = 0; i < active.length; i++) {
+    btn.textContent = '⏳ ' + (i+1) + '/' + active.length;
+    var res = await pingCompany(active[i].code, true);
+    if (res.ok) ok++; else fail++;
+    document.getElementById('hb-summary').textContent = ok + '✅ ' + (fail > 0 ? fail + '❌' : '');
+    // استراحة 500ms بين الطلبات لتفادي التقييد
+    if (i < active.length - 1) await new Promise(r => setTimeout(r, 500));
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🏓 Ping الكل';
+  toast('🏓 اكتمل: ' + ok + ' ناجح، ' + fail + ' فشل');
+  renderList(document.getElementById('search-input').value);
+  updateHeartbeatSummary();
+}
+
+/* ── ping من الـ drawer ── */
+async function drPing() {
+  var c = _cache.find(x => x.code === _drCode);
+  if (!c) return;
+  var btn = document.getElementById('dr-ping-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ جارٍ...';
+  var res = await pingCompany(_drCode, false);
+  btn.disabled = false;
+  btn.textContent = '🏓 Ping';
+  // تحديث معلومات الـ ping في الـ drawer
+  document.getElementById('dr-ping-info').style.whiteSpace = 'pre-line';
+  document.getElementById('dr-ping-info').textContent = pingInfoText(c.last_ping);
+  renderList(document.getElementById('search-input').value);
+}
+
+/* ── تحديث ملخص الـ heartbeat في الشريط العلوي ── */
+function updateHeartbeatSummary() {
+  var now   = Date.now();
+  var risky = _cache.filter(c => {
+    if (c.frozen || !c.sb_url) return false;
+    if (!c.last_ping) return true;
+    return (now - new Date(c.last_ping).getTime()) > 4 * 86400000; // > 4 أيام
+  });
+  var el = document.getElementById('hb-summary');
+  if (!el) return;
+  if (risky.length === 0) {
+    el.style.color = '#4ade80';
+    el.textContent = '✅ جميع الشركات آمنة';
+  } else {
+    el.style.color = '#f87171';
+    el.textContent = '⚠️ ' + risky.length + ' شركة تحتاج ping';
+  }
+}
+
+/* ── auto-ping عند فتح الصفحة (شركات > 5 أيام فقط) ── */
+async function autoPingStale() {
+  var now   = Date.now();
+  var stale = _cache.filter(c => {
+    if (c.frozen || !c.sb_url || !c.sb_key) return false;
+    if (!c.last_ping) return true;
+    return (now - new Date(c.last_ping).getTime()) > 5 * 86400000; // > 5 أيام
+  });
+  if (!stale.length) return;
+  console.log('[Heartbeat] ' + stale.length + ' شركة تحتاج auto-ping...');
+  for (var i = 0; i < stale.length; i++) {
+    await pingCompany(stale[i].code, true);
+    await new Promise(r => setTimeout(r, 600));
+  }
+  if (stale.length > 0) toast('🏓 Auto-ping: ' + stale.length + ' شركة تم تحديثها تلقائياً');
+  renderList(document.getElementById('search-input').value);
+  updateHeartbeatSummary();
+}
+
 async function loadCompanies() {
   initSB();
   const { data, error } = await sb.from("stoc_licenses").select("*").order("created_at",{ascending:false});
@@ -1150,6 +1338,8 @@ function updateStats(list) {
     const exp = new Date(c.expires);
     return exp >= today && exp <= soon;
   }).length;
+  // تحديث ملخص الـ heartbeat
+  updateHeartbeatSummary();
 }
 
 // ══════════════════════════════════════════════
@@ -1199,6 +1389,7 @@ async function renderList(query = "") {
           <span class="meta-chip">📱 ${c.devices}</span>
           <span class="meta-chip ${st.cls}">${st.label}</span>
           <span class="meta-chip ${c.frozen ? 'frozen-chip' : 'active-chip'}">${c.frozen ? '❌ مجمّدة' : '✅ نشطة'}</span>
+          ${pingStatusChip(c.last_ping)}
         </div>
       </div>
       <div class="company-actions-mini">
@@ -1276,6 +1467,13 @@ function openDrawer(code) {
   document.getElementById("dr-custom-date").value = c.expires || "";
 
   // Open
+  // Heartbeat info
+  const pingInfoEl = document.getElementById("dr-ping-info");
+  if (pingInfoEl) {
+    pingInfoEl.style.whiteSpace = "pre-line";
+    pingInfoEl.textContent = pingInfoText(c.last_ping);
+  }
+
   document.getElementById("drawer-overlay").classList.add("open");
   document.getElementById("manage-drawer").classList.add("open");
   document.body.style.overflow = "hidden";
