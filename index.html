@@ -631,34 +631,184 @@ input::placeholder{color:var(--muted);}
 </div>
 
 
-<!-- شاشة الإعداد الأولي — تظهر إذا لم تكن بيانات الاتصال مخزّنة -->
-<div id="setup-screen" style="display:none;position:fixed;inset:0;z-index:10000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;">
-  <div style="font-size:56px;margin-bottom:16px;">⚙️</div>
-  <div style="font-size:20px;font-weight:900;color:var(--text);margin-bottom:6px;">إعداد STOC Manager</div>
-  <div style="font-size:12px;color:var(--muted);margin-bottom:28px;text-align:center;line-height:1.8;">
-    أدخل بيانات Supabase الخاصة بلوحة الأدمن<br/>
-    <span style="color:var(--gold);">تُحفظ على هذا الجهاز فقط — لا شيء في الكود</span>
+<!-- ════ شاشة الإعداد الأولي — Wizard ════ -->
+<div id="setup-screen" style="display:none;position:fixed;inset:0;z-index:10000;background:#07090f;flex-direction:column;align-items:center;justify-content:flex-start;padding:0;overflow-y:auto;">
+
+  <!-- Header -->
+  <div style="width:100%;background:#0f1420;border-bottom:1px solid #1e2535;padding:18px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;">
+    <div style="width:38px;height:38px;background:linear-gradient(135deg,#b45309,#f59e0b);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">⚙️</div>
+    <div>
+      <div style="font-size:15px;font-weight:800;color:#e2e8f0;">إعداد STOC Manager</div>
+      <div style="font-size:10px;color:#64748b;" id="setup-step-label">الخطوة 1 من 3</div>
+    </div>
+    <div id="setup-step-dots" style="margin-right:auto;display:flex;gap:6px;">
+      <div id="dot1" style="width:8px;height:8px;border-radius:50%;background:#f59e0b;transition:all .3s;"></div>
+      <div id="dot2" style="width:8px;height:8px;border-radius:50%;background:#1e2535;transition:all .3s;"></div>
+      <div id="dot3" style="width:8px;height:8px;border-radius:50%;background:#1e2535;transition:all .3s;"></div>
+    </div>
   </div>
-  <div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px;">
-    <div>
-      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Supabase Project URL</div>
-      <input id="setup-url" type="text" placeholder="https://xxxxxxxxxxxx.supabase.co" dir="ltr"
-        style="width:100%;background:var(--surf);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:monospace;font-size:12px;padding:12px 14px;outline:none;transition:border-color .2s;"
-        onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border2)'"/>
+
+  <!-- Body -->
+  <div style="width:100%;max-width:480px;padding:24px 20px 40px;">
+
+    <!-- ── الخطوة 1: مرحبا ── -->
+    <div id="setup-p1">
+      <div style="text-align:center;padding:20px 0 28px;">
+        <div style="font-size:56px;margin-bottom:12px;">📦</div>
+        <div style="font-size:20px;font-weight:900;color:#e2e8f0;margin-bottom:8px;">مرحباً بك في STOC Manager</div>
+        <div style="font-size:12px;color:#64748b;line-height:1.9;">
+          لوحة تحكم إدارة تراخيص STOC PWA<br/>
+          الإعداد يستغرق <span style="color:#f59e0b;font-weight:700;">3 دقائق فقط</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;">
+        <div style="background:#0f1420;border:1px solid #1e2535;border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;">
+          <div style="font-size:20px;flex-shrink:0;">☁️</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:3px;">حساب Supabase</div>
+            <div style="font-size:11px;color:#64748b;line-height:1.7;">تحتاج مشروع Supabase خاص بلوحة الأدمن — مجاني على <a href="https://supabase.com" target="_blank" style="color:#f59e0b;text-decoration:none;">supabase.com</a></div>
+          </div>
+        </div>
+        <div style="background:#0f1420;border:1px solid #1e2535;border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;">
+          <div style="font-size:20px;flex-shrink:0;">🗄️</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:3px;">إنشاء الجدول</div>
+            <div style="font-size:11px;color:#64748b;line-height:1.7;">نسخ SQL جاهز وتشغيله في SQL Editor — خطوة واحدة</div>
+          </div>
+        </div>
+        <div style="background:#0f1420;border:1px solid #1e2535;border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;">
+          <div style="font-size:20px;flex-shrink:0;">🔑</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:3px;">إدخال بيانات الاتصال</div>
+            <div style="font-size:11px;color:#64748b;line-height:1.7;">Project URL + service_role key — تُحفظ على جهازك فقط</div>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="setupGo(2)"
+        style="width:100%;background:linear-gradient(135deg,#b45309,#f59e0b);color:#000;border:none;border-radius:14px;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;padding:15px;cursor:pointer;">
+        ابدأ الإعداد ←
+      </button>
     </div>
-    <div>
-      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Supabase Key (service_role)</div>
-      <input id="setup-key" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." dir="ltr"
-        style="width:100%;background:var(--surf);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:monospace;font-size:11px;padding:12px 14px;outline:none;transition:border-color .2s;"
-        onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border2)'"/>
-      <div style="font-size:10px;color:var(--muted);margin-top:5px;">Settings → API → service_role secret</div>
+
+    <!-- ── الخطوة 2: SQL ── -->
+    <div id="setup-p2" style="display:none;">
+      <div style="margin-bottom:20px;">
+        <div style="font-size:16px;font-weight:800;color:#e2e8f0;margin-bottom:6px;">🗄️ إنشاء جدول التراخيص</div>
+        <div style="font-size:12px;color:#64748b;line-height:1.8;">
+          افتح مشروعك في Supabase ← <strong style="color:#f59e0b;">SQL Editor</strong> ← الصق هذا الكود واضغط Run
+        </div>
+      </div>
+
+      <!-- خطوات Supabase -->
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+        <div style="background:#0f1420;border:1px solid #1e2535;border-radius:10px;padding:12px 14px;display:flex;gap:10px;align-items:center;">
+          <div style="width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#b45309,#f59e0b);color:#000;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+          <div style="font-size:12px;color:#94a3b8;">افتح <a href="https://supabase.com/dashboard" target="_blank" style="color:#f59e0b;font-weight:700;">supabase.com/dashboard</a> واختر مشروعك</div>
+        </div>
+        <div style="background:#0f1420;border:1px solid #1e2535;border-radius:10px;padding:12px 14px;display:flex;gap:10px;align-items:center;">
+          <div style="width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#b45309,#f59e0b);color:#000;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+          <div style="font-size:12px;color:#94a3b8;">من القائمة الجانبية: <strong style="color:#e2e8f0;">SQL Editor</strong></div>
+        </div>
+        <div style="background:#0f1420;border:1px solid #1e2535;border-radius:10px;padding:12px 14px;display:flex;gap:10px;align-items:center;">
+          <div style="width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#b45309,#f59e0b);color:#000;font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+          <div style="font-size:12px;color:#94a3b8;">الصق SQL الذي نسخته ← اضغط <strong style="color:#10b981;">Run</strong></div>
+        </div>
+      </div>
+
+      <!-- SQL Box -->
+      <div style="background:#060a10;border:1px solid #1e2535;border-radius:12px;overflow:hidden;margin-bottom:16px;">
+        <div style="padding:10px 14px;border-bottom:1px solid #1e2535;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;">SQL جاهز للتشغيل</span>
+          <button onclick="copySql()" id="copy-sql-btn"
+            style="background:#1e2535;border:none;border-radius:7px;color:#94a3b8;font-family:Cairo,sans-serif;font-size:11px;font-weight:700;padding:5px 12px;cursor:pointer;">
+            📋 نسخ
+          </button>
+        </div>
+        <pre id="setup-sql-pre" style="font-family:monospace;font-size:10px;color:#67e8f9;padding:14px;overflow-x:auto;white-space:pre;direction:ltr;text-align:left;line-height:1.7;margin:0;">CREATE TABLE IF NOT EXISTS stoc_licenses (
+  id         BIGSERIAL PRIMARY KEY,
+  company    TEXT NOT NULL,
+  code       TEXT NOT NULL UNIQUE,
+  sb_url     TEXT,
+  sb_key     TEXT,
+  expires    DATE,
+  devices    INT DEFAULT 5,
+  frozen     BOOLEAN DEFAULT FALSE,
+  note       TEXT,
+  sig        TEXT,
+  last_ping  TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE stoc_licenses ADD COLUMN IF NOT EXISTS last_ping TIMESTAMPTZ;
+ALTER TABLE stoc_licenses ENABLE ROW LEVEL SECURITY;
+GRANT SELECT ON stoc_licenses TO anon;
+GRANT SELECT ON stoc_licenses TO authenticated;
+
+CREATE POLICY \"anon_read_only\" ON stoc_licenses
+  FOR SELECT TO anon USING (true);
+CREATE POLICY \"admin_full_access\" ON stoc_licenses
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);</pre>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="setupGo(1)"
+          style="padding:13px 20px;background:transparent;border:1px solid #1e2535;border-radius:12px;color:#64748b;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">
+          → رجوع
+        </button>
+        <button onclick="setupGo(3)"
+          style="flex:1;background:linear-gradient(135deg,#b45309,#f59e0b);color:#000;border:none;border-radius:12px;font-family:Cairo,sans-serif;font-size:14px;font-weight:800;padding:13px;cursor:pointer;">
+          شغّلت SQL ← التالي
+        </button>
+      </div>
     </div>
-    <div id="setup-err" style="font-size:11px;color:var(--red);min-height:18px;text-align:center;"></div>
-    <button onclick="doSetup()"
-      style="width:100%;background:linear-gradient(135deg,var(--dim),var(--gold));color:#000;border:none;border-radius:14px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:800;padding:15px;cursor:pointer;transition:filter .2s;"
-      onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
-      💾 حفظ وتشغيل
-    </button>
+
+    <!-- ── الخطوة 3: بيانات الاتصال ── -->
+    <div id="setup-p3" style="display:none;">
+      <div style="margin-bottom:20px;">
+        <div style="font-size:16px;font-weight:800;color:#e2e8f0;margin-bottom:6px;">🔑 بيانات الاتصال</div>
+        <div style="font-size:12px;color:#64748b;line-height:1.8;">
+          من Supabase: <strong style="color:#f59e0b;">Settings → API</strong>
+        </div>
+      </div>
+
+      <!-- URL -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;">Project URL</div>
+        <input id="setup-url" type="text" placeholder="https://xxxxxxxxxxxx.supabase.co" dir="ltr"
+          style="width:100%;background:#0f1420;border:1px solid #2a3448;border-radius:11px;color:#e2e8f0;font-family:monospace;font-size:12px;padding:13px 14px;outline:none;transition:border-color .2s;box-sizing:border-box;"
+          onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#2a3448'"/>
+        <div style="font-size:10px;color:#475569;margin-top:5px;">من Project Settings → General → Project URL</div>
+      </div>
+
+      <!-- Key -->
+      <div style="margin-bottom:8px;">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;">Service Role Key</div>
+        <div style="position:relative;">
+          <input id="setup-key" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." dir="ltr"
+            style="width:100%;background:#0f1420;border:1px solid #2a3448;border-radius:11px;color:#e2e8f0;font-family:monospace;font-size:11px;padding:13px 44px 13px 14px;outline:none;transition:border-color .2s;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#2a3448'"/>
+          <button onclick="toggleKeyVis()" id="key-eye"
+            style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:transparent;border:none;cursor:pointer;font-size:16px;padding:0;">👁️</button>
+        </div>
+        <div style="font-size:10px;color:#475569;margin-top:5px;">من Settings → API → Secret keys → service_role → Reveal</div>
+      </div>
+
+      <div id="setup-status" style="min-height:34px;display:flex;align-items:center;gap:8px;padding:0 4px;margin-bottom:14px;font-size:12px;font-weight:700;color:#64748b;"></div>
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="setupGo(2)"
+          style="padding:13px 20px;background:transparent;border:1px solid #1e2535;border-radius:12px;color:#64748b;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer;">
+          → رجوع
+        </button>
+        <button onclick="doSetup()"
+          style="flex:1;background:linear-gradient(135deg,#b45309,#f59e0b);color:#000;border:none;border-radius:12px;font-family:Cairo,sans-serif;font-size:14px;font-weight:800;padding:13px;cursor:pointer;">
+          💾 تحقق وحفظ
+        </button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1147,52 +1297,80 @@ function resetAdminCfg() {
 
 
 // ══════════════════════════════════════════════
-//  SETUP SCREEN
+//  SETUP SCREEN — WIZARD
 // ══════════════════════════════════════════════
 function showSetupScreen() {
   const ss = document.getElementById("setup-screen");
   if (ss) { ss.style.display = "flex"; }
+  setupGo(1);
+}
+
+function setupGo(step) {
+  [1,2,3].forEach(i => {
+    const p = document.getElementById("setup-p"+i);
+    if (p) p.style.display = (i === step) ? "block" : "none";
+    const dot = document.getElementById("dot"+i);
+    if (dot) dot.style.background = (i <= step) ? "#f59e0b" : "#1e2535";
+  });
+  const labels = {1:"الخطوة 1 من 3 — المقدمة", 2:"الخطوة 2 من 3 — إنشاء الجدول", 3:"الخطوة 3 من 3 — بيانات الاتصال"};
+  const lbl = document.getElementById("setup-step-label");
+  if (lbl) lbl.textContent = labels[step] || "";
+}
+
+function copySql() {
+  const sql = document.getElementById("setup-sql-pre").textContent;
+  navigator.clipboard.writeText(sql).then(() => {
+    const btn = document.getElementById("copy-sql-btn");
+    btn.textContent = "✅ تم النسخ";
+    setTimeout(() => { btn.textContent = "📋 نسخ"; }, 2000);
+  }).catch(() => toast("⚠️ انسخ النص يدوياً"));
+}
+
+function toggleKeyVis() {
+  const inp = document.getElementById("setup-key");
+  const eye = document.getElementById("key-eye");
+  if (inp.type === "password") { inp.type = "text"; eye.textContent = "🙈"; }
+  else { inp.type = "password"; eye.textContent = "👁️"; }
 }
 
 async function doSetup() {
-  const url = document.getElementById("setup-url").value.trim().replace(/\/+$/,"");
-  const key = document.getElementById("setup-key").value.trim();
-  const err = document.getElementById("setup-err");
-  err.textContent = "";
+  const url    = (document.getElementById("setup-url").value || "").trim().replace(/\/+$/, "");
+  const key    = (document.getElementById("setup-key").value || "").trim();
+  const status = document.getElementById("setup-status");
 
   if (!url || !url.startsWith("https://") || !url.includes("supabase.co")) {
-    err.textContent = "⚠️ الـ URL غير صحيح — يجب أن يكون https://xxxx.supabase.co";
-    return;
+    status.innerHTML = "⚠️ الـ URL غير صحيح — يجب أن يبدأ بـ https://xxxx.supabase.co";
+    status.style.color = "var(--red)"; return;
   }
   if (!key || key.length < 100) {
-    err.textContent = "⚠️ الـ Key قصير — أدخل service_role key كاملاً";
-    return;
+    status.innerHTML = "⚠️ الـ Key قصير — تأكد من نسخ service_role key كاملاً";
+    status.style.color = "var(--red)"; return;
   }
-  err.textContent = "⏳ جارٍ التحقق من الاتصال…";
-  err.style.color = "var(--gold)";
+
+  status.innerHTML = "⏳ جارٍ التحقق من الاتصال…";
+  status.style.color = "var(--gold)";
 
   try {
     const testSB = window.supabase.createClient(url, key);
     const { error } = await Promise.race([
       testSB.from("stoc_licenses").select("id").limit(1),
-      new Promise((_,r) => setTimeout(() => r(new Error("timeout")), 8000))
+      new Promise((_,r) => setTimeout(() => r(new Error("انتهت مهلة الاتصال (8 ثانية)")), 8000))
     ]);
     const ok = !error || error.code === "42P01" || (error.message && error.message.includes("does not exist"));
     if (!ok) throw new Error(error?.message || "فشل الاتصال");
   } catch(e) {
-    err.textContent = "❌ " + (e.message || "تعذّر الاتصال");
-    err.style.color = "var(--red)";
-    return;
+    status.innerHTML = "❌ " + (e.message || "تعذّر الاتصال");
+    status.style.color = "var(--red)"; return;
   }
 
   saveAdminCfg(url, key);
-  err.textContent = "✅ تم الحفظ — جارٍ التشغيل…";
-  err.style.color = "var(--green)";
+  status.innerHTML = "✅ تم الحفظ بنجاح — جارٍ فتح التطبيق…";
+  status.style.color = "var(--green)";
   setTimeout(() => {
     const ss = document.getElementById("setup-screen");
     if (ss) ss.style.display = "none";
     initLockScreen();
-  }, 800);
+  }, 900);
 }
 
 // ══════════════════════════════════════════════
