@@ -630,6 +630,38 @@ input::placeholder{color:var(--muted);}
   </div>
 </div>
 
+
+<!-- شاشة الإعداد الأولي — تظهر إذا لم تكن بيانات الاتصال مخزّنة -->
+<div id="setup-screen" style="display:none;position:fixed;inset:0;z-index:10000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;">
+  <div style="font-size:56px;margin-bottom:16px;">⚙️</div>
+  <div style="font-size:20px;font-weight:900;color:var(--text);margin-bottom:6px;">إعداد STOC Manager</div>
+  <div style="font-size:12px;color:var(--muted);margin-bottom:28px;text-align:center;line-height:1.8;">
+    أدخل بيانات Supabase الخاصة بلوحة الأدمن<br/>
+    <span style="color:var(--gold);">تُحفظ على هذا الجهاز فقط — لا شيء في الكود</span>
+  </div>
+  <div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px;">
+    <div>
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Supabase Project URL</div>
+      <input id="setup-url" type="text" placeholder="https://xxxxxxxxxxxx.supabase.co" dir="ltr"
+        style="width:100%;background:var(--surf);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:monospace;font-size:12px;padding:12px 14px;outline:none;transition:border-color .2s;"
+        onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border2)'"/>
+    </div>
+    <div>
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Supabase Key (service_role)</div>
+      <input id="setup-key" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." dir="ltr"
+        style="width:100%;background:var(--surf);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:monospace;font-size:11px;padding:12px 14px;outline:none;transition:border-color .2s;"
+        onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border2)'"/>
+      <div style="font-size:10px;color:var(--muted);margin-top:5px;">Settings → API → service_role secret</div>
+    </div>
+    <div id="setup-err" style="font-size:11px;color:var(--red);min-height:18px;text-align:center;"></div>
+    <button onclick="doSetup()"
+      style="width:100%;background:linear-gradient(135deg,var(--dim),var(--gold));color:#000;border:none;border-radius:14px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:800;padding:15px;cursor:pointer;transition:filter .2s;"
+      onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
+      💾 حفظ وتشغيل
+    </button>
+  </div>
+</div>
+
 <button id="install-btn" onclick="installApp()">📲 تثبيت كتطبيق</button>
 
 <!-- Header -->
@@ -644,6 +676,10 @@ input::placeholder{color:var(--muted);}
   <div class="header-right">
     <div id="sb-status">⏳ جارٍ الاتصال…</div>
     <div class="badge-admin">🔐 المدير</div>
+    <button onclick="resetAdminCfg()" title="إعادة تعيين بيانات الاتصال"
+      style="width:32px;height:32px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;"
+      onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">⚙️</button>
   </div>
 </div>
 
@@ -1067,13 +1103,97 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
 
 <script>
 // ══════════════════════════════════════════════
-//  CONFIG
+//  CONFIG — بيانات الاتصال تُخزَّن في localStorage
+//  لا يوجد أي مفتاح أو سر في الكود المصدري
 // ══════════════════════════════════════════════
-const SECRET   = "Mounir2026";
-const SB_URL   = "https://pcjbkickwdpouphkygeq.supabase.co";
-const SB_KEY   = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBjamJraWNrd2Rwb3VwaGt5Z2VxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTAxNjI1NiwiZXhwIjoyMDk0NTkyMjU2fQ.cnvbQe4zm6G5pKJ9tFO388FQ_BBoXEulGgxdFq5ra3E";
-const LOCK_KEY = "stoc-admin-lock-v1";
-const PWA_BASE = "https://ayad-mounir.github.io/STOC-PWA/";
+const LOCK_KEY   = "stoc-admin-lock-v1";
+const ADMIN_CFG  = "stoc-admin-cfg-v2";   // url + key + secret
+const PWA_BASE   = "https://ayad-mounir.github.io/STOC-PWA/";
+
+// متغيرات ديناميكية — تُملأ من localStorage عند التشغيل
+let SB_URL = "", SB_KEY = "", SECRET = "";
+
+/* ── توليد سر عشوائي (مرة واحدة عند الإعداد) ── */
+function genSecret() {
+  return Array.from(crypto.getRandomValues(new Uint8Array(20)))
+    .map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
+/* ── تحميل إعدادات الاتصال من localStorage ── */
+function loadAdminCfg() {
+  try {
+    const c = JSON.parse(localStorage.getItem(ADMIN_CFG)) || {};
+    SB_URL = c.url   || "";
+    SB_KEY = c.key   || "";
+    SECRET = c.secret|| "";
+    return !!(SB_URL && SB_KEY && SECRET);
+  } catch { return false; }
+}
+
+/* ── حفظ إعدادات الاتصال ── */
+function saveAdminCfg(url, key) {
+  const secret = genSecret();
+  localStorage.setItem(ADMIN_CFG, JSON.stringify({ url, key, secret }));
+  SB_URL = url; SB_KEY = key; SECRET = secret;
+}
+
+/* ── إعادة تعيين الاتصال ── */
+function resetAdminCfg() {
+  if (!confirm("سيتم حذف بيانات الاتصال من هذا الجهاز.\nهل أنت متأكد؟")) return;
+  localStorage.removeItem(ADMIN_CFG);
+  localStorage.removeItem(LOCK_KEY);
+  location.reload();
+}
+
+
+// ══════════════════════════════════════════════
+//  SETUP SCREEN
+// ══════════════════════════════════════════════
+function showSetupScreen() {
+  const ss = document.getElementById("setup-screen");
+  if (ss) { ss.style.display = "flex"; }
+}
+
+async function doSetup() {
+  const url = document.getElementById("setup-url").value.trim().replace(/\/+$/,"");
+  const key = document.getElementById("setup-key").value.trim();
+  const err = document.getElementById("setup-err");
+  err.textContent = "";
+
+  if (!url || !url.startsWith("https://") || !url.includes("supabase.co")) {
+    err.textContent = "⚠️ الـ URL غير صحيح — يجب أن يكون https://xxxx.supabase.co";
+    return;
+  }
+  if (!key || key.length < 100) {
+    err.textContent = "⚠️ الـ Key قصير — أدخل service_role key كاملاً";
+    return;
+  }
+  err.textContent = "⏳ جارٍ التحقق من الاتصال…";
+  err.style.color = "var(--gold)";
+
+  try {
+    const testSB = window.supabase.createClient(url, key);
+    const { error } = await Promise.race([
+      testSB.from("stoc_licenses").select("id").limit(1),
+      new Promise((_,r) => setTimeout(() => r(new Error("timeout")), 8000))
+    ]);
+    const ok = !error || error.code === "42P01" || (error.message && error.message.includes("does not exist"));
+    if (!ok) throw new Error(error?.message || "فشل الاتصال");
+  } catch(e) {
+    err.textContent = "❌ " + (e.message || "تعذّر الاتصال");
+    err.style.color = "var(--red)";
+    return;
+  }
+
+  saveAdminCfg(url, key);
+  err.textContent = "✅ تم الحفظ — جارٍ التشغيل…";
+  err.style.color = "var(--green)";
+  setTimeout(() => {
+    const ss = document.getElementById("setup-screen");
+    if (ss) ss.style.display = "none";
+    initLockScreen();
+  }, 800);
+}
 
 // ══════════════════════════════════════════════
 //  INSTALL
@@ -1155,6 +1275,7 @@ let _cache = [];
 
 function initSB() {
   if (sb) return;
+  if (!SB_URL || !SB_KEY) { toast("⚠️ بيانات الاتصال غير محملة"); return; }
   sb = window.supabase.createClient(SB_URL, SB_KEY);
 }
 
@@ -1995,7 +2116,12 @@ function wizCopySql() {
 //  INIT
 // ══════════════════════════════════════════════
 window.addEventListener("DOMContentLoaded", () => {
-  initLockScreen();
+  const configured = loadAdminCfg();
+  if (!configured) {
+    showSetupScreen();
+  } else {
+    initLockScreen();
+  }
 });
 </script>
 </body>
