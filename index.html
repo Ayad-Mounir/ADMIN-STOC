@@ -738,10 +738,12 @@ input::placeholder{color:var(--muted);}
   note       TEXT,
   sig        TEXT,
   last_ping  TIMESTAMPTZ,
+  accounts   JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 ALTER TABLE stoc_licenses ADD COLUMN IF NOT EXISTS last_ping TIMESTAMPTZ;
+ALTER TABLE stoc_licenses ADD COLUMN IF NOT EXISTS accounts JSONB DEFAULT '{}';
 ALTER TABLE stoc_licenses ENABLE ROW LEVEL SECURITY;
 GRANT SELECT ON stoc_licenses TO anon;
 GRANT SELECT ON stoc_licenses TO authenticated;
@@ -855,10 +857,12 @@ CREATE POLICY "admin_full_access" ON stoc_licenses
   note       TEXT,
   sig        TEXT,
   last_ping  TIMESTAMPTZ,
+  accounts   JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 ALTER TABLE stoc_licenses ADD COLUMN IF NOT EXISTS last_ping TIMESTAMPTZ;
+ALTER TABLE stoc_licenses ADD COLUMN IF NOT EXISTS accounts JSONB DEFAULT '{}';
 ALTER TABLE stoc_licenses ENABLE ROW LEVEL SECURITY;
 GRANT SELECT ON stoc_licenses TO anon;
 GRANT SELECT ON stoc_licenses TO authenticated;
@@ -895,7 +899,10 @@ CREATE TABLE IF NOT EXISTS stk_meta (
 INSERT INTO stk_meta (id) VALUES (1) ON CONFLICT DO NOTHING;
 
 -- تفعيل Realtime على stk_data (مطلوب للمزامنة الفورية)
-ALTER TABLE stk_data REPLICA IDENTITY FULL;</pre>
+ALTER TABLE stk_data REPLICA IDENTITY FULL;
+
+-- إضافة عمود الحسابات (شغّل مرة واحدة في Supabase Admin)
+ALTER TABLE stoc_licenses ADD COLUMN IF NOT EXISTS accounts JSONB DEFAULT '{}';</pre>
     <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
       <button class="btn btn-gold" onclick="copySetupSql()" style="font-size:12px;padding:10px 20px;">📋 نسخ SQL</button>
       <button class="btn btn-outline" onclick="checkAdminDB()" style="font-size:12px;padding:10px 16px;">🔄 إعادة التحقق</button>
@@ -1031,6 +1038,32 @@ ALTER TABLE stk_data REPLICA IDENTITY FULL;</pre>
       <div class="drawer-section-title">🏓 Heartbeat Supabase</div>
       <div id="dr-ping-info" style="padding:10px 12px;background:#0d1117;border:1px solid #30363d;border-radius:10px;font-size:11px;color:#8b949e;line-height:1.7;">
         —
+      </div>
+    </div>
+
+    <!-- حسابات الخدمات -->
+    <div class="drawer-section" id="dr-accounts-section">
+      <div class="drawer-section-title">📧 حسابات الخدمات</div>
+      <div style="display:flex;flex-direction:column;gap:8px;" id="dr-accounts-body">
+        <div>
+          <div style="color:var(--muted);font-size:10px;font-weight:700;margin-bottom:4px;">🧠 Gemini AI</div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="email" id="dr-email-gemini" placeholder="إيميل Gemini..." dir="ltr"
+              style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Cairo',sans-serif;font-size:11px;padding:7px 10px;outline:none;"/>
+            <button onclick="drSaveAccounts()" style="padding:7px 12px;background:var(--gold);color:#000;border:none;border-radius:8px;font-family:'Cairo',sans-serif;font-weight:800;font-size:11px;cursor:pointer;white-space:nowrap;">💾</button>
+          </div>
+        </div>
+        <div>
+          <div style="color:var(--muted);font-size:10px;font-weight:700;margin-bottom:4px;">☁️ Google Drive</div>
+          <input type="email" id="dr-email-drive" placeholder="إيميل Drive..." dir="ltr"
+            style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Cairo',sans-serif;font-size:11px;padding:7px 10px;outline:none;box-sizing:border-box;"/>
+        </div>
+        <div>
+          <div style="color:var(--muted);font-size:10px;font-weight:700;margin-bottom:4px;">🔗 Supabase</div>
+          <input type="email" id="dr-email-supabase" placeholder="إيميل Supabase..." dir="ltr"
+            style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Cairo',sans-serif;font-size:11px;padding:7px 10px;outline:none;box-sizing:border-box;"/>
+        </div>
+        <div id="dr-accounts-msg" style="font-size:10px;color:var(--green);min-height:14px;"></div>
       </div>
     </div>
 
@@ -1194,6 +1227,35 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
           <div class="form-group full">
             <label>ملاحظة (اختياري)</label>
             <input type="text" id="wiz-note" placeholder="مثال: باقة بريميوم — اشتراك سنوي"/>
+          </div>
+
+          <!-- ══ حسابات الخدمات ══ -->
+          <div class="form-group full" style="margin-top:4px;">
+            <div style="background:#0d1117;border:1px solid #1e2535;border-radius:12px;padding:14px;">
+              <div style="color:#f59e0b;font-size:11px;font-weight:800;margin-bottom:12px;letter-spacing:.5px;">
+                📧 حسابات الخدمات (للمرجع فقط)
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <div>
+                  <label style="color:#64748b;font-size:10px;font-weight:700;display:block;margin-bottom:5px;">🧠 إيميل حساب Gemini AI</label>
+                  <input type="email" id="wiz-email-gemini" placeholder="example@gmail.com (حساب Google AI Studio)"
+                    dir="ltr" style="width:100%;background:#07090f;border:1px solid #1e2535;border-radius:8px;color:#e2e8f0;font-family:'Cairo',sans-serif;font-size:12px;padding:9px 12px;outline:none;box-sizing:border-box;"/>
+                </div>
+                <div>
+                  <label style="color:#64748b;font-size:10px;font-weight:700;display:block;margin-bottom:5px;">☁️ إيميل حساب Google Drive</label>
+                  <input type="email" id="wiz-email-drive" placeholder="example@gmail.com (حساب Google Drive)"
+                    dir="ltr" style="width:100%;background:#07090f;border:1px solid #1e2535;border-radius:8px;color:#e2e8f0;font-family:'Cairo',sans-serif;font-size:12px;padding:9px 12px;outline:none;box-sizing:border-box;"/>
+                </div>
+                <div>
+                  <label style="color:#64748b;font-size:10px;font-weight:700;display:block;margin-bottom:5px;">🔗 إيميل حساب Supabase</label>
+                  <input type="email" id="wiz-email-supabase" placeholder="example@gmail.com (حساب Supabase)"
+                    dir="ltr" style="width:100%;background:#07090f;border:1px solid #1e2535;border-radius:8px;color:#e2e8f0;font-family:'Cairo',sans-serif;font-size:12px;padding:9px 12px;outline:none;box-sizing:border-box;"/>
+                </div>
+              </div>
+              <div style="color:#334155;font-size:10px;margin-top:10px;line-height:1.6;">
+                💡 هذه المعلومات تُحفظ للمرجع فقط — تسهّل عليك متابعة حساب كل عميل
+              </div>
+            </div>
           </div>
         </div>
         <div class="hint-box">
@@ -2206,6 +2268,12 @@ async function wizGenerate() {
   document.getElementById("wiz-generating").style.display = "block";
   document.getElementById("wiz-result-box").style.display = "none";
 
+  // حسابات الخدمات
+  const emailGemini   = (document.getElementById("wiz-email-gemini")||{}).value||"";
+  const emailDrive    = (document.getElementById("wiz-email-drive")||{}).value||"";
+  const emailSupabase = (document.getElementById("wiz-email-supabase")||{}).value||"";
+  const accounts = { gemini: emailGemini.trim(), drive: emailDrive.trim(), supabase: emailSupabase.trim() };
+
   const code = genCode(company);
   const payloadToSign = { company, url, key, expires: expires || "", devices, code, v:1 };
   const sig  = await sign(payloadToSign);
@@ -2221,7 +2289,7 @@ async function wizGenerate() {
       sb.from("stoc_licenses").insert({
         company, code, sb_url: url, sb_key: key,
         expires: expires || null, devices, frozen: false, note: note || null, sig
-      }), 10000
+      , accounts: accounts}), 10000
     );
     if (error) {
       document.getElementById("wiz-generating").style.display = "none";
