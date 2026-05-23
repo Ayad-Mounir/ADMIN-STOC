@@ -670,18 +670,44 @@ input::placeholder{color:var(--muted);}
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- إضافة عمود last_ping للجداول الموجودة (تشغيل مرة واحدة فقط)
 ALTER TABLE stoc_licenses ADD COLUMN IF NOT EXISTS last_ping TIMESTAMPTZ;
-
 ALTER TABLE stoc_licenses ENABLE ROW LEVEL SECURITY;
-
 GRANT SELECT ON stoc_licenses TO anon;
 GRANT SELECT ON stoc_licenses TO authenticated;
-
 CREATE POLICY "anon_read_only" ON stoc_licenses
   FOR SELECT TO anon USING (true);
 CREATE POLICY "admin_full_access" ON stoc_licenses
-  FOR ALL TO authenticated USING (true) WITH CHECK (true);</pre>
+  FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- ═══════════════════════════════════════════════
+-- جداول مشروع Supabase الخاص بكل شركة (STOC PWA)
+-- شغّل هذا في مشروع Supabase الشركة (ليس مشروع الأدمن)
+-- ═══════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS stk_data (
+  id         TEXT NOT NULL,
+  tbl        TEXT NOT NULL,
+  data       JSONB NOT NULL DEFAULT '{}',
+  updated_at BIGINT NOT NULL DEFAULT 0,
+  deleted_at BIGINT,
+  PRIMARY KEY (id, tbl)
+);
+
+CREATE TABLE IF NOT EXISTS stk_config (
+  key   TEXT PRIMARY KEY,
+  value TEXT
+);
+
+CREATE TABLE IF NOT EXISTS stk_meta (
+  id        INT PRIMARY KEY DEFAULT 1,
+  ts        BIGINT DEFAULT 0,
+  reset_at  BIGINT DEFAULT 0,
+  order_seq INT DEFAULT 0
+);
+
+INSERT INTO stk_meta (id) VALUES (1) ON CONFLICT DO NOTHING;
+
+-- تفعيل Realtime على stk_data (مطلوب للمزامنة الفورية)
+ALTER TABLE stk_data REPLICA IDENTITY FULL;</pre>
     <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
       <button class="btn btn-gold" onclick="copySetupSql()" style="font-size:12px;padding:10px 20px;">📋 نسخ SQL</button>
       <button class="btn btn-outline" onclick="checkAdminDB()" style="font-size:12px;padding:10px 16px;">🔄 إعادة التحقق</button>
