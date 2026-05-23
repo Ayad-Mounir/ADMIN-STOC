@@ -1259,6 +1259,7 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
 //  لا يوجد أي مفتاح أو سر في الكود المصدري
 // ══════════════════════════════════════════════
 const LOCK_KEY   = "stoc-admin-lock-v1";
+const SIGN_KEY   = "Mounir2026";       // ← يتطابق مع STOC-PWA/js/auth.js
 const ADMIN_CFG  = "stoc-admin-cfg-v2";   // url + key + secret
 const PWA_BASE   = "https://ayad-mounir.github.io/STOC-PWA/";
 
@@ -1277,16 +1278,15 @@ function loadAdminCfg() {
     const c = JSON.parse(localStorage.getItem(ADMIN_CFG)) || {};
     SB_URL = c.url   || "";
     SB_KEY = c.key   || "";
-    SECRET = c.secret|| "";
-    return !!(SB_URL && SB_KEY && SECRET);
+    SECRET = SIGN_KEY; // ← دائماً استخدم المفتاح الثابت
+    return !!(SB_URL && SB_KEY);
   } catch { return false; }
 }
 
 /* ── حفظ إعدادات الاتصال ── */
 function saveAdminCfg(url, key) {
-  const secret = genSecret();
-  localStorage.setItem(ADMIN_CFG, JSON.stringify({ url, key, secret }));
-  SB_URL = url; SB_KEY = key; SECRET = secret;
+  localStorage.setItem(ADMIN_CFG, JSON.stringify({ url, key }));
+  SB_URL = url; SB_KEY = key; SECRET = SIGN_KEY;
 }
 
 /* ── إعادة تعيين الاتصال ── */
@@ -1468,7 +1468,7 @@ function setSBStatus(ok, msg) {
 }
 
 async function sign(payload) {
-  const msg = JSON.stringify(payload) + SECRET;
+  const msg = JSON.stringify(payload) + SIGN_KEY; // ← مفتاح ثابت يتطابق مع PWA
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(msg));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("").slice(0,32);
 }
