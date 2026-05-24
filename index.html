@@ -1029,6 +1029,7 @@ ALTER TABLE stoc_licenses ADD COLUMN IF NOT EXISTS accounts JSONB DEFAULT '{}';<
         <button class="action-btn" onclick="drCopyLink()">🔗 نسخ الرابط</button>
         <button class="action-btn" id="dr-ping-btn" onclick="drPing()" style="border-color:#05966930;color:#10b981;">🏓 Ping</button>
         <button class="action-btn" id="dr-freeze-btn" onclick="drToggleFreeze()">🔒 تجميد</button>
+        <button class="action-btn" onclick="drPushUpdate()" style="border-color:#6366f140;color:#818cf8;" title="يحدّث Supabase/Gemini/ClientID فوراً على جهاز العميل بدون إعادة تفعيل">⚡ تحديث فوري</button>
         <button class="action-btn delete-btn" onclick="drDelete()">🗑️ حذف نهائي</button>
       </div>
     </div>
@@ -2034,6 +2035,50 @@ async function drDelete() {
   await loadCompanies();
   updateStats(_cache);
   renderList(document.getElementById("search-input").value);
+}
+
+// ── تحديث فوري: يحدّث sb_url/sb_key/accounts في DB → PWA يطبقها تلقائياً ──
+async function drPushUpdate() {
+  const c = _cache.find(x => x.code === _drCode);
+  if (!c) return;
+
+  // حفظ أحدث القيم من حقول الـ drawer أولاً
+  await drSaveAccounts();
+
+  // إعادة تحميل العميل من الكاش بعد الحفظ
+  const fresh = _cache.find(x => x.code === _drCode);
+  if (!fresh) return;
+
+  // حساب sig جديد بالبيانات الحالية وتحديث DB
+  const data = {
+    company: fresh.company,
+    url:     fresh.sb_url || "",
+    key:     fresh.sb_key || "",
+    expires: fresh.expires || "",
+    devices: fresh.devices,
+    code:    fresh.code,
+    v: 1
+  };
+  const newSig = await sign(data);
+  initSB();
+
+  const { error } = await sb.from("stoc_licenses")
+    .update({
+      sb_url:   fresh.sb_url   || null,
+      sb_key:   fresh.sb_key   || null,
+      accounts: fresh.accounts || {},
+      sig:      newSig
+    })
+    .eq("code", fresh.code);
+
+  if (error) {
+    toast("❌ فشل التحديث: " + error.message);
+    return;
+  }
+
+  // تحديث الكاش المحلي
+  fresh.sig = newSig;
+  toast("⚡ تم تحديث الإعدادات — سيطبّقها التطبيق تلقائياً عند أول مزامنة");
 }
 
 // QR من الـ drawer
