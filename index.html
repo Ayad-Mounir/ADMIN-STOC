@@ -1052,11 +1052,18 @@ ALTER TABLE stoc_licenses ADD COLUMN IF NOT EXISTS accounts JSONB DEFAULT '{}';<
               style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Cairo',sans-serif;font-size:11px;padding:7px 10px;outline:none;"/>
             <button onclick="drSaveAccounts()" style="padding:7px 12px;background:var(--gold);color:#000;border:none;border-radius:8px;font-family:'Cairo',sans-serif;font-weight:800;font-size:11px;cursor:pointer;white-space:nowrap;">💾</button>
           </div>
+          <div style="color:var(--muted);font-size:10px;font-weight:700;margin:6px 0 4px;">🔑 Gemini API Key <span style="color:#f59e0b;">(مطلوب للذكاء الاصطناعي)</span></div>
+          <input type="text" id="dr-gemini-key" placeholder="AIzaSy..." dir="ltr"
+            style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Cairo',sans-serif;font-size:10px;padding:7px 10px;outline:none;box-sizing:border-box;"/>style="padding:7px 12px;background:var(--gold);color:#000;border:none;border-radius:8px;font-family:'Cairo',sans-serif;font-weight:800;font-size:11px;cursor:pointer;white-space:nowrap;">💾</button>
+          </div>
         </div>
         <div>
-          <div style="color:var(--muted);font-size:10px;font-weight:700;margin-bottom:4px;">☁️ Google Drive</div>
+          <div style="color:var(--muted);font-size:10px;font-weight:700;margin-bottom:4px;">☁️ Google Drive — إيميل الحساب</div>
           <input type="email" id="dr-email-drive" placeholder="إيميل Drive..." dir="ltr"
-            style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Cairo',sans-serif;font-size:11px;padding:7px 10px;outline:none;box-sizing:border-box;"/>
+            style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Cairo',sans-serif;font-size:11px;padding:7px 10px;outline:none;box-sizing:border-box;margin-bottom:6px;"/>
+          <div style="color:var(--muted);font-size:10px;font-weight:700;margin-bottom:4px;">🔑 Google Client ID <span style="color:#f59e0b;">(مطلوب لتفعيل النسخ)</span></div>
+          <input type="text" id="dr-client-id" placeholder="xxxxxxxxx.apps.googleusercontent.com" dir="ltr"
+            style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Cairo',sans-serif;font-size:10px;padding:7px 10px;outline:none;box-sizing:border-box;"/>
         </div>
         <div>
           <div style="color:var(--muted);font-size:10px;font-weight:700;margin-bottom:4px;">🔗 Supabase</div>
@@ -1239,12 +1246,18 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
                 <div>
                   <label style="color:#64748b;font-size:10px;font-weight:700;display:block;margin-bottom:5px;">🧠 إيميل حساب Gemini AI</label>
                   <input type="email" id="wiz-email-gemini" placeholder="example@gmail.com (حساب Google AI Studio)"
-                    dir="ltr" style="width:100%;background:#07090f;border:1px solid #1e2535;border-radius:8px;color:#e2e8f0;font-family:'Cairo',sans-serif;font-size:12px;padding:9px 12px;outline:none;box-sizing:border-box;"/>
+                    dir="ltr" style="width:100%;background:#07090f;border:1px solid #1e2535;border-radius:8px;color:#e2e8f0;font-family:'Cairo',sans-serif;font-size:12px;padding:9px 12px;outline:none;box-sizing:border-box;margin-bottom:6px;"/>
+                  <label style="color:#f59e0b;font-size:10px;font-weight:700;display:block;margin-bottom:5px;">🔑 Gemini API Key <span style="color:#94a3b8;">(مطلوب لتفعيل الذكاء الاصطناعي)</span></label>
+                  <input type="text" id="wiz-gemini-key" placeholder="AIzaSy..."
+                    dir="ltr" style="width:100%;background:#07090f;border:1px solid #f59e0b40;border-radius:8px;color:#e2e8f0;font-family:'Cairo',sans-serif;font-size:11px;padding:9px 12px;outline:none;box-sizing:border-box;"/>
                 </div>
                 <div>
                   <label style="color:#64748b;font-size:10px;font-weight:700;display:block;margin-bottom:5px;">☁️ إيميل حساب Google Drive</label>
                   <input type="email" id="wiz-email-drive" placeholder="example@gmail.com (حساب Google Drive)"
-                    dir="ltr" style="width:100%;background:#07090f;border:1px solid #1e2535;border-radius:8px;color:#e2e8f0;font-family:'Cairo',sans-serif;font-size:12px;padding:9px 12px;outline:none;box-sizing:border-box;"/>
+                    dir="ltr" style="width:100%;background:#07090f;border:1px solid #1e2535;border-radius:8px;color:#e2e8f0;font-family:'Cairo',sans-serif;font-size:12px;padding:9px 12px;outline:none;box-sizing:border-box;margin-bottom:6px;"/>
+                  <label style="color:#f59e0b;font-size:10px;font-weight:700;display:block;margin-bottom:5px;">🔑 Google Client ID <span style="color:#94a3b8;">(مطلوب لتفعيل النسخ الاحتياطي)</span></label>
+                  <input type="text" id="wiz-client-id" placeholder="xxxxxxxxx.apps.googleusercontent.com"
+                    dir="ltr" style="width:100%;background:#07090f;border:1px solid #f59e0b40;border-radius:8px;color:#e2e8f0;font-family:'Cairo',sans-serif;font-size:11px;padding:9px 12px;outline:none;box-sizing:border-box;"/>
                 </div>
                 <div>
                   <label style="color:#64748b;font-size:10px;font-weight:700;display:block;margin-bottom:5px;">🔗 إيميل حساب Supabase</label>
@@ -1863,6 +1876,19 @@ function openDrawer(code) {
     pingInfoEl.textContent = pingInfoText(c.last_ping);
   }
 
+  // Accounts (Gemini / Drive / Client ID / Supabase)
+  const acc = c.accounts || {};
+  const elGemini    = document.getElementById("dr-email-gemini");
+  const elGeminiKey = document.getElementById("dr-gemini-key");
+  const elDrive     = document.getElementById("dr-email-drive");
+  const elClientId  = document.getElementById("dr-client-id");
+  const elSupa      = document.getElementById("dr-email-supabase");
+  if (elGemini)    elGemini.value    = acc.gemini    || "";
+  if (elGeminiKey) elGeminiKey.value = acc.geminiKey || "";
+  if (elDrive)     elDrive.value     = acc.drive     || "";
+  if (elClientId)  elClientId.value  = acc.clientId  || "";
+  if (elSupa)      elSupa.value      = acc.supabase  || "";
+
   document.getElementById("drawer-overlay").classList.add("open");
   document.getElementById("manage-drawer").classList.add("open");
   document.body.style.overflow = "hidden";
@@ -1872,6 +1898,34 @@ function closeDrawer() {
   document.getElementById("drawer-overlay").classList.remove("open");
   document.getElementById("manage-drawer").classList.remove("open");
   document.body.style.overflow = "";
+}
+
+// ── حفظ حسابات الخدمات (Gemini / Drive / Client ID / Supabase) ──
+async function drSaveAccounts() {
+  const c = _cache.find(x => x.code === _drCode);
+  if (!c) return;
+  const emailGemini   = (document.getElementById("dr-email-gemini")  || {}).value || "";
+  const geminiKey     = (document.getElementById("dr-gemini-key")     || {}).value || "";
+  const emailDrive    = (document.getElementById("dr-email-drive")    || {}).value || "";
+  const clientId      = (document.getElementById("dr-client-id")      || {}).value || "";
+  const emailSupabase = (document.getElementById("dr-email-supabase") || {}).value || "";
+  const accounts = {
+    gemini:    emailGemini.trim(),
+    geminiKey: geminiKey.trim(),
+    drive:     emailDrive.trim(),
+    clientId:  clientId.trim(),
+    supabase:  emailSupabase.trim()
+  };
+  try {
+    initSB();
+    await sb.from("stoc_licenses").update({ accounts }).eq("code", c.code);
+    c.accounts = accounts;
+    const msgEl = document.getElementById("dr-accounts-msg");
+    if (msgEl) { msgEl.textContent = "✅ تم الحفظ"; setTimeout(() => msgEl.textContent = "", 2500); }
+  } catch(e) {
+    const msgEl = document.getElementById("dr-accounts-msg");
+    if (msgEl) { msgEl.textContent = "❌ خطأ في الحفظ"; }
+  }
 }
 
 // تمديد الاشتراك
@@ -1994,7 +2048,9 @@ async function drCopyLink() {
 // ══════════════════════════════════════════════
 function buildPayload(c) {
   return { company: c.company, url: c.sb_url || "", key: c.sb_key || "",
-           expires: c.expires || "", devices: c.devices, code: c.code, v: 1, sig: c.sig };
+           expires: c.expires || "", devices: c.devices, code: c.code, v: 1, sig: c.sig,
+           clientId:   (c.accounts && c.accounts.clientId)  ? c.accounts.clientId  : "",
+           geminiKey:  (c.accounts && c.accounts.geminiKey) ? c.accounts.geminiKey : "" };
 }
 
 // بناء payload مع إعادة حساب الـ sig دائماً
@@ -2008,7 +2064,9 @@ async function buildPayloadFresh(c) {
     await sb.from("stoc_licenses").update({ sig: newSig }).eq("code", c.code);
     c.sig = newSig; // تحديث الكاش المحلي
   }
-  return { ...data, sig: newSig };
+  const clientId  = (c.accounts && c.accounts.clientId)  ? c.accounts.clientId  : "";
+  const geminiKey = (c.accounts && c.accounts.geminiKey) ? c.accounts.geminiKey : "";
+  return { ...data, sig: newSig, clientId, geminiKey };
 }
 
 function buildLink(payload) {
@@ -2270,14 +2328,16 @@ async function wizGenerate() {
 
   // حسابات الخدمات
   const emailGemini   = (document.getElementById("wiz-email-gemini")||{}).value||"";
+  const wizGeminiKey  = (document.getElementById("wiz-gemini-key")||{}).value||"";
   const emailDrive    = (document.getElementById("wiz-email-drive")||{}).value||"";
+  const wizClientId   = (document.getElementById("wiz-client-id")||{}).value||"";
   const emailSupabase = (document.getElementById("wiz-email-supabase")||{}).value||"";
-  const accounts = { gemini: emailGemini.trim(), drive: emailDrive.trim(), supabase: emailSupabase.trim() };
+  const accounts = { gemini: emailGemini.trim(), geminiKey: wizGeminiKey.trim(), drive: emailDrive.trim(), clientId: wizClientId.trim(), supabase: emailSupabase.trim() };
 
   const code = genCode(company);
   const payloadToSign = { company, url, key, expires: expires || "", devices, code, v:1 };
   const sig  = await sign(payloadToSign);
-  const payload = { ...payloadToSign, sig };
+  const payload = { ...payloadToSign, sig, clientId: wizClientId.trim(), geminiKey: wizGeminiKey.trim() };
 
   const link = buildLink(payload);
   _wizLink = link; _wizPayload = payload;
