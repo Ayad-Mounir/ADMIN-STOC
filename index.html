@@ -1061,7 +1061,13 @@ ALTER TABLE stoc_licenses ADD COLUMN IF NOT EXISTS accounts JSONB DEFAULT '{}';<
           <div style="color:var(--muted);font-size:10px;font-weight:700;margin-bottom:4px;">☁️ Google Drive — إيميل الحساب</div>
           <input type="email" id="dr-email-drive" placeholder="إيميل Drive..." dir="ltr"
             style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Cairo',sans-serif;font-size:11px;padding:7px 10px;outline:none;box-sizing:border-box;margin-bottom:6px;"/>
-          <div style="color:var(--muted);font-size:10px;font-weight:700;margin-bottom:4px;">🔑 Google Client ID <span style="color:#f59e0b;">(مطلوب لتفعيل النسخ)</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <div style="color:var(--muted);font-size:10px;font-weight:700;">🔑 Google Client ID <span style="color:#f59e0b;">(مطلوب لتفعيل النسخ)</span></div>
+            <a href="https://console.cloud.google.com/apis/credentials" target="_blank"
+              style="font-size:9px;color:#4285F4;text-decoration:none;font-weight:700;background:#4285F420;padding:3px 7px;border-radius:5px;border:1px solid #4285F440;white-space:nowrap;">
+              🔗 Google Console
+            </a>
+          </div>
           <input type="text" id="dr-client-id" placeholder="xxxxxxxxx.apps.googleusercontent.com" dir="ltr"
             style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Cairo',sans-serif;font-size:10px;padding:7px 10px;outline:none;box-sizing:border-box;"/>
         </div>
@@ -1255,7 +1261,13 @@ CREATE POLICY "public_access_tx"    ON stoc_transactions FOR ALL USING (true) WI
                   <label style="color:#64748b;font-size:10px;font-weight:700;display:block;margin-bottom:5px;">☁️ إيميل حساب Google Drive</label>
                   <input type="email" id="wiz-email-drive" placeholder="example@gmail.com (حساب Google Drive)"
                     dir="ltr" style="width:100%;background:#07090f;border:1px solid #1e2535;border-radius:8px;color:#e2e8f0;font-family:'Cairo',sans-serif;font-size:12px;padding:9px 12px;outline:none;box-sizing:border-box;margin-bottom:6px;"/>
-                  <label style="color:#f59e0b;font-size:10px;font-weight:700;display:block;margin-bottom:5px;">🔑 Google Client ID <span style="color:#94a3b8;">(مطلوب لتفعيل النسخ الاحتياطي)</span></label>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+                    <label style="color:#f59e0b;font-size:10px;font-weight:700;display:block;">🔑 Google Client ID <span style="color:#94a3b8;">(مطلوب لتفعيل النسخ الاحتياطي)</span></label>
+                    <a href="https://console.cloud.google.com/apis/credentials" target="_blank"
+                      style="font-size:9px;color:#4285F4;text-decoration:none;font-weight:700;background:#4285F420;padding:3px 7px;border-radius:5px;border:1px solid #4285F440;white-space:nowrap;">
+                      🔗 Google Console
+                    </a>
+                  </div>
                   <input type="text" id="wiz-client-id" placeholder="xxxxxxxxx.apps.googleusercontent.com"
                     dir="ltr" style="width:100%;background:#07090f;border:1px solid #f59e0b40;border-radius:8px;color:#e2e8f0;font-family:'Cairo',sans-serif;font-size:11px;padding:9px 12px;outline:none;box-sizing:border-box;"/>
                 </div>
